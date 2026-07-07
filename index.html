@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU Budget — Self-host GLM/Qwen3</title>
+<meta name="description" content="Інтерактивний кошторис оренди GPU під self-host open-weight LLM (GLM/Qwen3) з редагованими цінами.">
+<style>
+  :root {
+    --paper:#eef0ee; --card:#f7f8f6; --ink:#17201f; --ink-soft:#4a5654; --ink-faint:#7c8886;
+    --line:#d3d8d4; --line-soft:#e2e6e2; --accent:#0d7d6b; --accent-ink:#095e50; --accent-bg:#dcece8;
+    --warn:#b4560f; --warn-bg:#f6e6d6; --warn-line:#e3b98a; --danger:#b23b3b;
+    --mono: ui-monospace,"SF Mono",SFMono-Regular,Menlo,"Cascadia Mono",Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper:#0d1211; --card:#141b1a; --ink:#e7ece9; --ink-soft:#a4b0ac; --ink-faint:#6c7a76;
+      --line:#263230; --line-soft:#1c2523; --accent:#37c9ac; --accent-ink:#7fe6d0; --accent-bg:#10312b;
+      --warn:#e08a3c; --warn-bg:#2c1c0f; --warn-line:#573619; --danger:#e07070;
+    }
+  }
+  :root[data-theme="light"] {
+    --paper:#eef0ee; --card:#f7f8f6; --ink:#17201f; --ink-soft:#4a5654; --ink-faint:#7c8886;
+    --line:#d3d8d4; --line-soft:#e2e6e2; --accent:#0d7d6b; --accent-ink:#095e50; --accent-bg:#dcece8;
+    --warn:#b4560f; --warn-bg:#f6e6d6; --warn-line:#e3b98a; --danger:#b23b3b;
+  }
+  :root[data-theme="dark"] {
+    --paper:#0d1211; --card:#141b1a; --ink:#e7ece9; --ink-soft:#a4b0ac; --ink-faint:#6c7a76;
+    --line:#263230; --line-soft:#1c2523; --accent:#37c9ac; --accent-ink:#7fe6d0; --accent-bg:#10312b;
+    --warn:#e08a3c; --warn-bg:#2c1c0f; --warn-line:#573619; --danger:#e07070;
+  }
+  * { box-sizing:border-box; }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); line-height:1.55; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:880px; margin:0 auto; padding:clamp(1.5rem,4vw,3.5rem) clamp(1rem,4vw,2rem) 4rem; }
+
+  .eyebrow { font-family:var(--mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent-ink); margin:0 0 .7rem; }
+  h1 { font-size:clamp(1.7rem,4.5vw,2.5rem); line-height:1.08; letter-spacing:-.02em; text-wrap:balance; margin:0 0 .6rem; }
+  .lede { color:var(--ink-soft); font-size:1.02rem; max-width:62ch; margin:0; }
+
+  h2 { font-family:var(--mono); font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint);
+       margin:0 0 1rem; padding-bottom:.5rem; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:.6rem; }
+  h2 .n { color:var(--accent); font-weight:700; }
+  section { margin-top:clamp(2.4rem,6vw,3.6rem); }
+
+  .calc { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:clamp(1.1rem,3vw,1.7rem); }
+  .presets { display:flex; flex-wrap:wrap; gap:.5rem; margin-bottom:1.4rem; }
+  .preset, .gpu-opt, .btn {
+    font-family:var(--mono); font-size:.78rem; letter-spacing:.02em; padding:.5rem .8rem; border-radius:8px;
+    border:1px solid var(--line); background:transparent; color:var(--ink-soft); cursor:pointer;
+    transition:background .15s,border-color .15s,color .15s;
+  }
+  .preset:hover, .gpu-opt:hover, .btn:hover { border-color:var(--accent); color:var(--ink); }
+  .preset[aria-pressed="true"], .gpu-opt[aria-pressed="true"] { background:var(--accent-bg); border-color:var(--accent); color:var(--accent-ink); font-weight:600; }
+  .gpu-row { margin-bottom:1.4rem; }
+  .cap { font-family:var(--mono); font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:.5rem; }
+  .gpu-opts { display:flex; flex-wrap:wrap; gap:.5rem; }
+
+  .fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:1rem 1.2rem; }
+  .field label { display:block; font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:.35rem; }
+  .field input { width:100%; font-family:var(--mono); font-size:1.05rem; font-variant-numeric:tabular-nums; color:var(--ink);
+                 background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:.55rem .65rem; }
+  .field input:focus-visible, .cfg input:focus-visible, .btn:focus-visible, .preset:focus-visible, .gpu-opt:focus-visible {
+    outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
+
+  .result { margin-top:1.5rem; padding-top:1.4rem; border-top:1px dashed var(--line);
+            display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:1rem; }
+  .result .big { font-family:var(--mono); font-variant-numeric:tabular-nums; line-height:1; }
+  .result .big .num { font-size:clamp(2.4rem,8vw,3.4rem); font-weight:700; color:var(--accent); letter-spacing:-.02em; }
+  .result .big .unit { font-size:1rem; color:var(--ink-faint); margin-left:.3rem; }
+  .breakdown { font-family:var(--mono); font-size:.82rem; color:var(--ink-soft); text-align:right; font-variant-numeric:tabular-nums; }
+  .breakdown span { color:var(--ink); }
+  .formula { margin-top:1.3rem; font-family:var(--mono); font-size:.82rem; color:var(--ink-soft); background:var(--paper);
+             border:1px solid var(--line-soft); border-radius:8px; padding:.7rem .85rem; overflow-x:auto; white-space:nowrap; }
+  .formula b { color:var(--accent-ink); font-weight:600; }
+
+  /* settings panel */
+  details.cfg { margin-top:1rem; border:1px solid var(--line); border-radius:12px; background:var(--card); overflow:hidden; }
+  details.cfg > summary { list-style:none; cursor:pointer; padding:.8rem 1rem; font-family:var(--mono); font-size:.78rem;
+    letter-spacing:.06em; color:var(--ink-soft); display:flex; align-items:center; gap:.5rem; user-select:none; }
+  details.cfg > summary::-webkit-details-marker { display:none; }
+  details.cfg > summary::before { content:"▸"; color:var(--accent); transition:transform .15s; }
+  details.cfg[open] > summary::before { transform:rotate(90deg); }
+  .cfg-body { padding:0 1rem 1rem; }
+  .cfg-list { display:grid; gap:.5rem; margin:.4rem 0 .9rem; }
+  .cfg-item { display:grid; grid-template-columns:1fr 92px 34px; gap:.5rem; align-items:center; }
+  .cfg-item input { width:100%; font-family:var(--mono); font-size:.85rem; color:var(--ink); background:var(--paper);
+    border:1px solid var(--line); border-radius:7px; padding:.4rem .55rem; font-variant-numeric:tabular-nums; }
+  .cfg-item .del { border:1px solid var(--line); background:transparent; color:var(--danger); border-radius:7px; cursor:pointer; height:34px; font-size:1rem; line-height:1; }
+  .cfg-item .del:hover { border-color:var(--danger); }
+  .cfg-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .cfg-head { display:grid; grid-template-columns:1fr 92px 34px; gap:.5rem; }
+  .cfg-head span { font-family:var(--mono); font-size:.62rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); }
+  .toast { font-family:var(--mono); font-size:.72rem; color:var(--accent-ink); margin-left:.4rem; opacity:0; transition:opacity .2s; }
+  .toast.show { opacity:1; }
+
+  .scroll { overflow-x:auto; border:1px solid var(--line); border-radius:12px; }
+  table { border-collapse:collapse; width:100%; font-size:.9rem; }
+  th, td { text-align:left; padding:.7rem .85rem; border-bottom:1px solid var(--line-soft); }
+  thead th { font-family:var(--mono); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); background:var(--card); border-bottom:1px solid var(--line); }
+  tbody tr:last-child td { border-bottom:none; }
+  td.num, th.num { text-align:right; font-family:var(--mono); font-variant-numeric:tabular-nums; }
+  .pick td { background:var(--accent-bg); }
+  .pick td:first-child { box-shadow:inset 3px 0 0 var(--accent); }
+  .tag { display:inline-block; font-family:var(--mono); font-size:.62rem; letter-spacing:.08em; text-transform:uppercase;
+         padding:.12rem .4rem; border-radius:4px; margin-left:.4rem; background:var(--accent); color:#06110f; vertical-align:middle; }
+
+  .warn { background:var(--warn-bg); border:1px solid var(--warn-line); border-left:4px solid var(--warn); border-radius:10px; padding:1rem 1.15rem; }
+  .warn .h { font-family:var(--mono); font-size:.72rem; letter-spacing:.12em; text-transform:uppercase; color:var(--warn); font-weight:700; margin-bottom:.5rem; }
+  .warn p { margin:.3rem 0; color:var(--ink-soft); font-size:.92rem; }
+  .warn .mono { font-family:var(--mono); color:var(--ink); font-variant-numeric:tabular-nums; }
+
+  .setup { display:grid; gap:.1rem; }
+  .setup .row { display:grid; grid-template-columns:minmax(120px,180px) 1fr; gap:1rem; padding:.7rem 0; border-bottom:1px solid var(--line-soft); align-items:baseline; }
+  .setup .row:last-child { border-bottom:none; }
+  .setup .k { font-family:var(--mono); font-size:.78rem; color:var(--accent-ink); letter-spacing:.02em; }
+  .setup .v { color:var(--ink-soft); font-size:.92rem; }
+  .setup .v code, .lede code { font-family:var(--mono); font-size:.82rem; background:var(--card); border:1px solid var(--line-soft); padding:.05rem .35rem; border-radius:5px; color:var(--ink); }
+
+  p.note { color:var(--ink-faint); font-size:.82rem; font-family:var(--mono); line-height:1.6; }
+  footer { margin-top:3.5rem; padding-top:1.2rem; border-top:1px solid var(--line); }
+  strong { color:var(--ink); font-weight:650; }
+  a { color:var(--accent-ink); }
+  @media (max-width:520px) {
+    .setup .row { grid-template-columns:1fr; gap:.2rem; }
+    .result { flex-direction:column; align-items:flex-start; }
+    .breakdown { text-align:left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Self-hosted LLM · Malware-research lab</p>
+  <h1>Кошторис оренди GPU та вибір моделі</h1>
+  <p class="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (GLM / Qwen3) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком.</p>
+
+  <section>
+    <h2><span class="n">01</span> Калькулятор місячної вартості</h2>
+    <div class="calc">
+      <div class="presets" id="presets" role="group" aria-label="Пресети інтенсивності">
+        <button class="preset" data-h="2" data-d="20" aria-pressed="false">Легкий · 2 год × 20</button>
+        <button class="preset" data-h="4" data-d="22" aria-pressed="true">Середній · 4 год × 22</button>
+        <button class="preset" data-h="8" data-d="22" aria-pressed="false">Важкий · 8 год × 22</button>
+      </div>
+
+      <div class="gpu-row">
+        <div class="cap">GPU / провайдер (задає ставку $/год)</div>
+        <div class="gpu-opts" id="gpus" role="group" aria-label="Вибір GPU"></div>
+      </div>
+
+      <div class="fields">
+        <div class="field"><label for="hpd">Годин / день</label><input id="hpd" type="number" min="0" step="0.5" value="4" inputmode="decimal"></div>
+        <div class="field"><label for="dpm">Днів / місяць</label><input id="dpm" type="number" min="0" step="1" value="22" inputmode="numeric"></div>
+        <div class="field"><label for="rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" value="1.40" inputmode="decimal"></div>
+        <div class="field"><label for="vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" value="6" inputmode="decimal"></div>
+      </div>
+
+      <div class="result">
+        <div class="big">
+          <div class="cap">Разом на місяць</div>
+          <span class="num" id="total">$129</span><span class="unit">/ міс</span>
+        </div>
+        <div class="breakdown" id="bd">
+          <span id="hm">88</span> год/міс × <span id="r2">$1.40</span> = <span id="compute">$123</span> compute<br>
+          + <span id="v2">$6</span> volume (24/7)
+        </div>
+      </div>
+
+      <div class="formula"><b>Разом</b> = ( год/день × днів/міс × $/год ) + volume<sub>міс</sub></div>
+
+      <details class="cfg" id="cfg">
+        <summary>Налаштування цін та GPU</summary>
+        <div class="cfg-body">
+          <div class="cfg-head"><span>Назва (GPU · провайдер)</span><span>$/год</span><span></span></div>
+          <div class="cfg-list" id="cfgList"></div>
+          <div class="cfg-actions">
+            <button class="btn" id="addGpu" type="button">+ Додати GPU</button>
+            <button class="btn" id="resetCfg" type="button">Скинути до типових</button>
+            <button class="btn" id="shareCfg" type="button">Скопіювати лінк з цінами</button>
+            <span class="toast" id="toast"></span>
+          </div>
+        </div>
+      </details>
+    </div>
+    <p class="note">Ставки орієнтовні (маркетплейс плаває — звіряй перед деплоєм). Ціни зберігаються у твоєму браузері; «лінк з цінами» вшиває їх у URL для шерингу.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> Готові сценарії</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Режим</th><th class="num">Год/міс</th><th class="num">A100 RunPod</th><th class="num">H100 RunPod</th><th class="num">A100 Vast.ai</th></tr></thead>
+        <tbody>
+          <tr><td>Легкий (2 год × 20)</td><td class="num">40</td><td class="num">~$62</td><td class="num">~$94</td><td class="num">~$42</td></tr>
+          <tr class="pick"><td>Середній (4 год × 22) <span class="tag">старт</span></td><td class="num">88</td><td class="num">~$129</td><td class="num">~$200</td><td class="num">~$85</td></tr>
+          <tr><td>Важкий (8 год × 22)</td><td class="num">176</td><td class="num">~$252</td><td class="num">~$393</td><td class="num">~$164</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Суми включають ~$6/міс volume. «Старт» = рекомендована стартова конфігурація для обкатки воркфлоу.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> Головна пастка — забути вимкнути</h2>
+    <div class="warn">
+      <div class="h">⚠ Always-on = ×8 бюджету</div>
+      <p>Уся економіка тримається на тому, що pod вимикається після сесії. Якщо він працює 24/7:</p>
+      <p class="mono">A100: $1.40 × 730 год ≈ $1 022 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $2.20 × 730 ≈ $1 606 / міс</p>
+      <p><strong>Запобіжники:</strong> увімкни idle auto-stop (гасить pod за N хв бездіяльності) · постав billing alert (~$200) · ваги на volume, тож наступний старт швидкий і нічого не втрачаєш.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> Яку модель — GLM чи Qwen3</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Модель</th><th>Тип</th><th class="num">4-bit розмір</th><th>Залізо</th><th>Коли брати</th></tr></thead>
+        <tbody>
+          <tr class="pick"><td>GLM-4.5-Air <span class="tag">осн.</span></td><td>MoE 106B / 12B акт.</td><td class="num">~55 ГБ</td><td>1× 80GB</td><td>Найкращий баланс reasoning + code/RE + tool-use під одну карту</td></tr>
+          <tr><td>Qwen3-30B-A3B</td><td>MoE 30B / 3B акт.</td><td class="num">~17 ГБ</td><td>1× 48GB</td><td>Дешево й дуже швидко — масовий triage</td></tr>
+          <tr><td>Qwen3-32B</td><td>dense</td><td class="num">~20 ГБ</td><td>1× 48GB</td><td>Передбачувана dense-якість, сильний код</td></tr>
+          <tr><td>Qwen3-235B-A22B</td><td>MoE 235B / 22B акт.</td><td class="num">~120 ГБ</td><td>2× 80GB</td><td>Стеля якості за наявності 2 карт</td></tr>
+          <tr><td>GLM-4.5 (full)</td><td>MoE 355B / 32B акт.</td><td class="num">~200 ГБ</td><td>4–8× 80GB</td><td>Overkill — тільки під разову важку задачу</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Липень 2026 — вже є свіжіші варіанти (GLM-5.2-Air, новіші Qwen3). Логіка та сама: під 1× 80GB — MoE ~100B у 4-bit або dense ≤32B. Перевір актуальні AWQ/FP8 квенти на HF перед деплоєм.</p>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> Рекомендація та налаштування</h2>
+    <p style="margin-top:-.3rem;color:var(--ink-soft)">Для malware-research (розбір артефактів, RE-асист, детекції, навчальні матеріали) вирішальні <strong>глибина reasoning</strong>, <strong>code/agentic</strong> і <strong>tool-use</strong> — тут <strong>GLM-4.5-Air</strong> виграє під одну карту. Qwen3-30B-A3B тримай швидким/дешевим другим контуром для triage.</p>
+    <div class="setup" style="margin-top:1.3rem">
+      <div class="row"><div class="k">Модель</div><div class="v"><code>QuantTrio/GLM-4.5-Air-AWQ-FP16Mix</code> (~55 ГБ, 1× A100/H100 80GB)</div></div>
+      <div class="row"><div class="k">Сервер</div><div class="v">vLLM: <code>--quantization awq_marlin</code> · <code>--max-model-len 32768</code> · <code>--gpu-memory-utilization 0.92</code></div></div>
+      <div class="row"><div class="k">Доступ</div><div class="v">Завжди <code>--api-key</code>; краще SSH-тунель замість публічного порту</div></div>
+      <div class="row"><div class="k">Ваги</div><div class="v">Network volume ~80 ГБ, <code>HF_HOME=/workspace/hf</code> — не качати щоразу</div></div>
+      <div class="row"><div class="k">Ізоляція</div><div class="v">LLM-box ≠ detonation-box. У модель — лише <strong>артефакти</strong> (дизасембл, логи, hex), не живі зразки. Детонація — в air-gapped VMs</div></div>
+      <div class="row"><div class="k">Економія</div><div class="v">Auto-stop за idle · вимикай між сесіями · Vast.ai ≈ −45% ціни</div></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="note">Ціни — оцінки станом на середину 2026; GPU-маркетплейси змінюють ставки щодня. Перед розгортанням звіряй live-ставку та наявність мультикарткових інстансів. Self-host обраний заради приватності зразків і відсутності чужих фільтрів — відповідальність за авторизацію й ізоляцію lab на операторі.</p>
+  </footer>
+</div>
+
+<script>
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+  const LS_KEY = "gpuBudgetConfig.v1";
+
+  const DEFAULTS = {
+    gpus: [
+      { label: "A100 80GB · RunPod", rate: 1.40 },
+      { label: "H100 80GB · RunPod", rate: 2.20 },
+      { label: "A100 80GB · Vast.ai", rate: 0.90 }
+    ],
+    vol: 6
+  };
+
+  const hpd = $("hpd"), dpm = $("dpm"), rate = $("rate"), vol = $("vol");
+  let config = loadConfig();
+  let activeGpu = 0;
+
+  function loadConfig() {
+    // 1) URL ?c=<base64 json>  2) localStorage  3) defaults
+    try {
+      const p = new URLSearchParams(location.search).get("c");
+      if (p) {
+        const c = JSON.parse(decodeURIComponent(escape(atob(p))));
+        if (c && Array.isArray(c.gpus) && c.gpus.length) return sanitize(c);
+      }
+    } catch (e) { /* ignore malformed link */ }
+    try {
+      const s = localStorage.getItem(LS_KEY);
+      if (s) { const c = JSON.parse(s); if (c && Array.isArray(c.gpus) && c.gpus.length) return sanitize(c); }
+    } catch (e) { /* ignore */ }
+    return structuredClone(DEFAULTS);
+  }
+  function sanitize(c) {
+    return {
+      gpus: c.gpus.map(g => ({ label: String(g.label || "GPU").slice(0, 48), rate: Math.max(0, Number(g.rate) || 0) })),
+      vol: Math.max(0, Number(c.vol) || 0)
+    };
+  }
+  function saveConfig() {
+    try { localStorage.setItem(LS_KEY, JSON.stringify(config)); } catch (e) { /* storage may be blocked */ }
+  }
+
+  function recalc() {
+    const h = parseFloat(hpd.value) || 0, d = parseFloat(dpm.value) || 0;
+    const r = parseFloat(rate.value) || 0, v = parseFloat(vol.value) || 0;
+    const hoursMonth = h * d, compute = hoursMonth * r, total = compute + v;
+    $("total").textContent = money(total);
+    $("hm").textContent = (Math.round(hoursMonth * 10) / 10).toLocaleString("en-US");
+    $("r2").textContent = "$" + r.toFixed(2);
+    $("compute").textContent = money(compute);
+    $("v2").textContent = money(v);
+  }
+
+  function renderGpuButtons() {
+    const box = $("gpus");
+    box.innerHTML = "";
+    if (activeGpu >= config.gpus.length) activeGpu = 0;
+    config.gpus.forEach((g, i) => {
+      const b = document.createElement("button");
+      b.className = "gpu-opt";
+      b.type = "button";
+      b.setAttribute("aria-pressed", i === activeGpu ? "true" : "false");
+      b.textContent = `${g.label} ($${g.rate.toFixed(2)})`;
+      b.addEventListener("click", () => {
+        activeGpu = i;
+        rate.value = g.rate.toFixed(2);
+        renderGpuButtons();
+        recalc();
+      });
+      box.appendChild(b);
+    });
+    // keep the rate field in sync with the active GPU
+    if (config.gpus[activeGpu]) rate.value = config.gpus[activeGpu].rate.toFixed(2);
+  }
+
+  function renderCfgList() {
+    const list = $("cfgList");
+    list.innerHTML = "";
+    config.gpus.forEach((g, i) => {
+      const row = document.createElement("div");
+      row.className = "cfg-item";
+
+      const name = document.createElement("input");
+      name.type = "text"; name.value = g.label; name.setAttribute("aria-label", "Назва GPU");
+      name.addEventListener("input", () => { g.label = name.value; saveConfig(); renderGpuButtons(); });
+
+      const rt = document.createElement("input");
+      rt.type = "number"; rt.min = "0"; rt.step = "0.05"; rt.value = g.rate; rt.inputMode = "decimal";
+      rt.setAttribute("aria-label", "Ставка $/год");
+      rt.addEventListener("input", () => {
+        g.rate = Math.max(0, parseFloat(rt.value) || 0);
+        saveConfig(); renderGpuButtons();
+        if (i === activeGpu) { rate.value = g.rate.toFixed(2); recalc(); }
+      });
+
+      const del = document.createElement("button");
+      del.className = "del"; del.type = "button"; del.textContent = "×"; del.title = "Видалити";
+      del.setAttribute("aria-label", "Видалити GPU");
+      del.addEventListener("click", () => {
+        if (config.gpus.length <= 1) return;
+        config.gpus.splice(i, 1);
+        if (activeGpu >= config.gpus.length) activeGpu = config.gpus.length - 1;
+        saveConfig(); renderCfgList(); renderGpuButtons(); recalc();
+      });
+
+      row.append(name, rt, del);
+      list.appendChild(row);
+    });
+  }
+
+  function flash(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  // events
+  [hpd, dpm, vol].forEach(el => el.addEventListener("input", () => {
+    document.querySelectorAll("#presets .preset").forEach(b => b.setAttribute("aria-pressed", "false"));
+    recalc();
+  }));
+  rate.addEventListener("input", () => { document.querySelectorAll("#gpus .gpu-opt").forEach(b => b.setAttribute("aria-pressed", "false")); recalc(); });
+
+  document.querySelectorAll("#presets .preset").forEach(btn => btn.addEventListener("click", () => {
+    document.querySelectorAll("#presets .preset").forEach(b => b.setAttribute("aria-pressed", "false"));
+    btn.setAttribute("aria-pressed", "true");
+    hpd.value = btn.dataset.h; dpm.value = btn.dataset.d; recalc();
+  }));
+
+  $("addGpu").addEventListener("click", () => {
+    config.gpus.push({ label: "Новий GPU · провайдер", rate: 1.00 });
+    saveConfig(); renderCfgList(); renderGpuButtons();
+  });
+  $("resetCfg").addEventListener("click", () => {
+    config = structuredClone(DEFAULTS); activeGpu = 0;
+    saveConfig(); renderCfgList(); renderGpuButtons();
+    vol.value = config.vol; recalc(); flash("Скинуто");
+  });
+  $("shareCfg").addEventListener("click", async () => {
+    const payload = btoa(unescape(encodeURIComponent(JSON.stringify(config))));
+    const url = location.origin + location.pathname + "?c=" + payload;
+    try { await navigator.clipboard.writeText(url); flash("Лінк скопійовано"); }
+    catch (e) { prompt("Скопіюй лінк:", url); }
+  });
+
+  // init
+  vol.value = config.vol;
+  renderCfgList();
+  renderGpuButtons();
+  recalc();
+</script>
+</body>
+</html>
