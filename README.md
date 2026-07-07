@@ -1,8 +1,8 @@
 # GPU Budget — Self-host GLM/Qwen3
 
 Інтерактивний одностраничний кошторис оренди GPU під self-host open-weight LLM
-(GLM / Qwen3) для malware-research / security lab. Порахуй місячну вартість
-on-demand pod (RunPod / Vast.ai), обери модель під наявне залізо.
+(GLM / Qwen3). Порахуй місячну вартість on-demand pod (RunPod / Vast.ai), обери
+модель під наявне залізо.
 
 **Живий сайт:** https://vasilypolyuhovich.github.io/gpu-budget-calculator/
 

@@ -131,7 +131,7 @@
 </head>
 <body>
 <div class="wrap">
-  <p class="eyebrow">Self-hosted LLM · Malware-research lab</p>
+  <p class="eyebrow">Self-hosted LLM · GPU cost planner</p>
   <h1>Кошторис оренди GPU та вибір моделі</h1>
   <p class="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (GLM / Qwen3) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком.</p>
 
@@ -230,19 +230,19 @@
 
   <section>
     <h2><span class="n">05</span> Рекомендація та налаштування</h2>
-    <p style="margin-top:-.3rem;color:var(--ink-soft)">Для malware-research (розбір артефактів, RE-асист, детекції, навчальні матеріали) вирішальні <strong>глибина reasoning</strong>, <strong>code/agentic</strong> і <strong>tool-use</strong> — тут <strong>GLM-4.5-Air</strong> виграє під одну карту. Qwen3-30B-A3B тримай швидким/дешевим другим контуром для triage.</p>
+    <p style="margin-top:-.3rem;color:var(--ink-soft)">Для складних задач із <strong>reasoning</strong>, <strong>кодом / agentic</strong> і <strong>tool-use</strong> під одну карту виграє <strong>GLM-4.5-Air</strong>. Qwen3-30B-A3B тримай швидким і дешевим другим контуром для високопропускних задач.</p>
     <div class="setup" style="margin-top:1.3rem">
       <div class="row"><div class="k">Модель</div><div class="v"><code>QuantTrio/GLM-4.5-Air-AWQ-FP16Mix</code> (~55 ГБ, 1× A100/H100 80GB)</div></div>
       <div class="row"><div class="k">Сервер</div><div class="v">vLLM: <code>--quantization awq_marlin</code> · <code>--max-model-len 32768</code> · <code>--gpu-memory-utilization 0.92</code></div></div>
       <div class="row"><div class="k">Доступ</div><div class="v">Завжди <code>--api-key</code>; краще SSH-тунель замість публічного порту</div></div>
       <div class="row"><div class="k">Ваги</div><div class="v">Network volume ~80 ГБ, <code>HF_HOME=/workspace/hf</code> — не качати щоразу</div></div>
-      <div class="row"><div class="k">Ізоляція</div><div class="v">LLM-box ≠ detonation-box. У модель — лише <strong>артефакти</strong> (дизасембл, логи, hex), не живі зразки. Детонація — в air-gapped VMs</div></div>
+      <div class="row"><div class="k">Мережа</div><div class="v">Не публікуй порт відкрито — приватна мережа провайдера або SSH-тунель; endpoint лише за токеном</div></div>
       <div class="row"><div class="k">Економія</div><div class="v">Auto-stop за idle · вимикай між сесіями · Vast.ai ≈ −45% ціни</div></div>
     </div>
   </section>
 
   <footer>
-    <p class="note">Ціни — оцінки станом на середину 2026; GPU-маркетплейси змінюють ставки щодня. Перед розгортанням звіряй live-ставку та наявність мультикарткових інстансів. Self-host обраний заради приватності зразків і відсутності чужих фільтрів — відповідальність за авторизацію й ізоляцію lab на операторі.</p>
+    <p class="note">Ціни — оцінки станом на середину 2026; GPU-маркетплейси змінюють ставки щодня. Перед розгортанням звіряй live-ставку та наявність мультикарткових інстансів. Self-host обраний заради приватності даних і повного контролю над стеком.</p>
   </footer>
 </div>
 
