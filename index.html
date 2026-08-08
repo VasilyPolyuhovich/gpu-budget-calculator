@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GPU Budget — Self-host GLM/Qwen3</title>
-<meta name="description" content="Інтерактивний кошторис оренди GPU під self-host open-weight LLM (GLM/Qwen3) з редагованими цінами.">
+<title>GPU Budget — Self-host open-weight LLM</title>
+<meta name="description" content="Інтерактивний кошторис оренди GPU під self-host open-weight LLM (Qwen3.6/Coder-Next) з редагованими цінами. Оновлено серпень 2026.">
 <style>
   :root {
     --paper:#eef0ee; --card:#f7f8f6; --ink:#17201f; --ink-soft:#4a5654; --ink-faint:#7c8886;
@@ -133,7 +133,7 @@
 <div class="wrap">
   <p class="eyebrow">Self-hosted LLM · GPU cost planner</p>
   <h1>Кошторис оренди GPU та вибір моделі</h1>
-  <p class="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (GLM / Qwen3) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком.</p>
+  <p class="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (Qwen3.6-27B / Coder-Next) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком. <strong>Дані звірено з реальними деплоями (серпень 2026).</strong></p>
 
   <section>
     <h2><span class="n">01</span> Калькулятор місячної вартості</h2>
@@ -152,8 +152,8 @@
       <div class="fields">
         <div class="field"><label for="hpd">Годин / день</label><input id="hpd" type="number" min="0" step="0.5" value="4" inputmode="decimal"></div>
         <div class="field"><label for="dpm">Днів / місяць</label><input id="dpm" type="number" min="0" step="1" value="22" inputmode="numeric"></div>
-        <div class="field"><label for="rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" value="1.40" inputmode="decimal"></div>
-        <div class="field"><label for="vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" value="6" inputmode="decimal"></div>
+        <div class="field"><label for="rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" value="1.39" inputmode="decimal"></div>
+        <div class="field"><label for="vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" value="7" inputmode="decimal"></div>
       </div>
 
       <div class="result">
@@ -162,8 +162,8 @@
           <span class="num" id="total">$129</span><span class="unit">/ міс</span>
         </div>
         <div class="breakdown" id="bd">
-          <span id="hm">88</span> год/міс × <span id="r2">$1.40</span> = <span id="compute">$123</span> compute<br>
-          + <span id="v2">$6</span> volume (24/7)
+          <span id="hm">88</span> год/міс × <span id="r2">$1.39</span> = <span id="compute">$122</span> compute<br>
+          + <span id="v2">$7</span> volume (24/7)
         </div>
       </div>
 
@@ -190,15 +190,15 @@
     <h2><span class="n">02</span> Готові сценарії</h2>
     <div class="scroll">
       <table>
-        <thead><tr><th>Режим</th><th class="num">Год/міс</th><th class="num">A100 RunPod</th><th class="num">H100 RunPod</th><th class="num">A100 Vast.ai</th></tr></thead>
+        <thead><tr><th>Режим</th><th class="num">Год/міс</th><th class="num">A100 Secure $1.39</th><th class="num">A100 Community $0.79</th><th class="num">H100 $1.99</th></tr></thead>
         <tbody>
-          <tr><td>Легкий (2 год × 20)</td><td class="num">40</td><td class="num">~$62</td><td class="num">~$94</td><td class="num">~$42</td></tr>
-          <tr class="pick"><td>Середній (4 год × 22) <span class="tag">старт</span></td><td class="num">88</td><td class="num">~$129</td><td class="num">~$200</td><td class="num">~$85</td></tr>
-          <tr><td>Важкий (8 год × 22)</td><td class="num">176</td><td class="num">~$252</td><td class="num">~$393</td><td class="num">~$164</td></tr>
+          <tr><td>Легкий (2 год × 20)</td><td class="num">40</td><td class="num">~$63</td><td class="num">~$39</td><td class="num">~$87</td></tr>
+          <tr class="pick"><td>Середній (4 год × 22) <span class="tag">старт</span></td><td class="num">88</td><td class="num">~$129</td><td class="num">~$77</td><td class="num">~$182</td></tr>
+          <tr><td>Важкий (8 год × 22)</td><td class="num">176</td><td class="num">~$252</td><td class="num">~$146</td><td class="num">~$357</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Суми включають ~$6/міс volume. «Старт» = рекомендована стартова конфігурація для обкатки воркфлоу.</p>
+    <p class="note">Суми включають ~$7/міс volume (100 ГБ × $0.07). <strong>Secure</strong> = дата-центри провайдера з SLA (надійний старт); <strong>Community</strong>/маркетплейс — дешевше, але хост може не піднятись. «Старт» = рекомендована конфігурація для обкатки.</p>
   </section>
 
   <section>
@@ -206,43 +206,55 @@
     <div class="warn">
       <div class="h">⚠ Always-on = ×8 бюджету</div>
       <p>Уся економіка тримається на тому, що pod вимикається після сесії. Якщо він працює 24/7:</p>
-      <p class="mono">A100: $1.40 × 730 год ≈ $1 022 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $2.20 × 730 ≈ $1 606 / міс</p>
-      <p><strong>Запобіжники:</strong> увімкни idle auto-stop (гасить pod за N хв бездіяльності) · постав billing alert (~$200) · ваги на volume, тож наступний старт швидкий і нічого не втрачаєш.</p>
+      <p class="mono">A100: $1.39 × 730 год ≈ $1 015 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $1.99 × 730 ≈ $1 453 / міс</p>
+      <p><strong>Запобіжники (з практики):</strong> <strong>запланований авто-terminate за розкладом</strong> (напр. cron/CI щовечора) — ловить навіть pod-и, підняті через веб-консоль без idle-stop · idle auto-stop за N хв бездіяльності · billing alert (~$200) · ваги на volume, тож наступний старт швидкий і нічого не втрачаєш.</p>
     </div>
   </section>
 
   <section>
-    <h2><span class="n">04</span> Яку модель — GLM чи Qwen3</h2>
+    <h2><span class="n">04</span> Яку модель (серпень 2026)</h2>
     <div class="scroll">
       <table>
-        <thead><tr><th>Модель</th><th>Тип</th><th class="num">4-bit розмір</th><th>Залізо</th><th>Коли брати</th></tr></thead>
+        <thead><tr><th>Модель</th><th>Тип</th><th class="num">Розмір (квант)</th><th>Залізо</th><th class="num">SWE-bench</th><th>Коли брати</th></tr></thead>
         <tbody>
-          <tr class="pick"><td>GLM-4.5-Air <span class="tag">осн.</span></td><td>MoE 106B / 12B акт.</td><td class="num">~55 ГБ</td><td>1× 80GB</td><td>Найкращий баланс reasoning + code/RE + tool-use під одну карту</td></tr>
-          <tr><td>Qwen3-30B-A3B</td><td>MoE 30B / 3B акт.</td><td class="num">~17 ГБ</td><td>1× 48GB</td><td>Дешево й дуже швидко — масовий triage</td></tr>
-          <tr><td>Qwen3-32B</td><td>dense</td><td class="num">~20 ГБ</td><td>1× 48GB</td><td>Передбачувана dense-якість, сильний код</td></tr>
-          <tr><td>Qwen3-235B-A22B</td><td>MoE 235B / 22B акт.</td><td class="num">~120 ГБ</td><td>2× 80GB</td><td>Стеля якості за наявності 2 карт</td></tr>
-          <tr><td>GLM-4.5 (full)</td><td>MoE 355B / 32B акт.</td><td class="num">~200 ГБ</td><td>4–8× 80GB</td><td>Overkill — тільки під разову важку задачу</td></tr>
+          <tr class="pick"><td>Qwen3.6-27B <span class="tag">1× карта</span></td><td>dense 27B (thinking)</td><td class="num">~28 ГБ (6-bit)</td><td>1× 48–80GB</td><td class="num">77.2%</td><td>Найкраще на одній карті: reasoning + код + tool-use. Б'є 397B MoE</td></tr>
+          <tr><td>Qwen3-Coder-Next</td><td>MoE 80B / 3B акт. (non-thinking)</td><td class="num">~45 ГБ (4-bit)</td><td>1× 80GB</td><td class="num">~70.6%</td><td>~2× швидший, без reasoning-паузи — інтерактивний код</td></tr>
+          <tr><td>Qwen3.8-27B</td><td>dense 27B</td><td class="num">~28 ГБ</td><td>1× 48–80GB</td><td class="num">new</td><td>Наступник 3.6-27B (open weights ~серпень) — перевір HF</td></tr>
+          <tr><td>GLM-4.6 / 4.5-Air</td><td>MoE ~106B / 12B акт.</td><td class="num">~55 ГБ (4-bit)</td><td>1× 80GB</td><td class="num">~68%</td><td>MoE-альтернатива на одну карту; довгі agentic-сесії</td></tr>
+          <tr><td>DeepSeek-V4-Pro</td><td>MoE (frontier)</td><td class="num">200 ГБ+</td><td>4–8× 80GB</td><td class="num">80.6%</td><td>Стеля open-weight, але потрібен кластер</td></tr>
+          <tr><td>Qwen3.8-Max · GLM-5.2 · Kimi K2.6</td><td>надвеликі MoE (1T+)</td><td class="num">1 ТБ+</td><td>багато-GPU / cloud</td><td class="num">—</td><td>Frontier — не під одну карту, здебільшого через API</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note">Липень 2026 — вже є свіжіші варіанти (GLM-5.2-Air, новіші Qwen3). Логіка та сама: під 1× 80GB — MoE ~100B у 4-bit або dense ≤32B. Перевір актуальні AWQ/FP8 квенти на HF перед деплоєм.</p>
+    <p class="note">Правило під <strong>1× 80GB</strong>: dense ≤ ~30B (Qwen3.6/3.8-27B) або MoE ~80–106B у 4-bit (Coder-Next, GLM-Air). Frontier-якість (DeepSeek-V4-Pro, Qwen3.8-Max) вимагає кластера. SWE-bench Verified — найнадійніший проксі agentic-коду. Перевіряй актуальні AWQ-квенти на HF (репо з <strong>Xet</strong> качаються значно швидше).</p>
   </section>
 
   <section>
     <h2><span class="n">05</span> Рекомендація та налаштування</h2>
-    <p style="margin-top:-.3rem;color:var(--ink-soft)">Для складних задач із <strong>reasoning</strong>, <strong>кодом / agentic</strong> і <strong>tool-use</strong> під одну карту виграє <strong>GLM-4.5-Air</strong>. Qwen3-30B-A3B тримай швидким і дешевим другим контуром для високопропускних задач.</p>
+    <p style="margin-top:-.3rem;color:var(--ink-soft)">Під одну карту для <strong>reasoning + код + tool-use</strong> виграє <strong>Qwen3.6-27B</strong> (якість). Для інтерактиву, де дратує затримка, тримай <strong>Qwen3-Coder-Next</strong> — ~2× швидший, non-thinking. Перемикання = один параметр, якщо запекти профілі в образ.</p>
     <div class="setup" style="margin-top:1.3rem">
-      <div class="row"><div class="k">Модель</div><div class="v"><code>QuantTrio/GLM-4.5-Air-AWQ-FP16Mix</code> (~55 ГБ, 1× A100/H100 80GB)</div></div>
-      <div class="row"><div class="k">Сервер</div><div class="v">vLLM: <code>--quantization awq_marlin</code> · <code>--max-model-len 32768</code> · <code>--gpu-memory-utilization 0.92</code></div></div>
-      <div class="row"><div class="k">Доступ</div><div class="v">Завжди <code>--api-key</code>; краще SSH-тунель замість публічного порту</div></div>
-      <div class="row"><div class="k">Ваги</div><div class="v">Network volume ~80 ГБ, <code>HF_HOME=/workspace/hf</code> — не качати щоразу</div></div>
-      <div class="row"><div class="k">Мережа</div><div class="v">Не публікуй порт відкрито — приватна мережа провайдера або SSH-тунель; endpoint лише за токеном</div></div>
-      <div class="row"><div class="k">Економія</div><div class="v">Auto-stop за idle · вимикай між сесіями · Vast.ai ≈ −45% ціни</div></div>
+      <div class="row"><div class="k">Модель</div><div class="v"><code>QuantTrio/Qwen3.6-27B-AWQ-6Bit</code> (~28 ГБ) або <code>bullpoint/Qwen3-Coder-Next-AWQ-4bit</code> (~45 ГБ, швидший)</div></div>
+      <div class="row"><div class="k">Сервер</div><div class="v">vLLM: <code>--quantization awq_marlin</code> · <code>--enable-auto-tool-choice --tool-call-parser qwen3_coder</code> · <code>--reasoning-parser qwen3</code> (лише thinking) · <code>--max-model-len 131072</code> · <code>--gpu-memory-utilization 0.92</code></div></div>
+      <div class="row"><div class="k">Доступ</div><div class="v">Завжди <code>--api-key</code>; стабільний URL через reverse-proxy (напр. Cloudflare Worker → поточний pod), щоб не переписувати per-pod</div></div>
+      <div class="row"><div class="k">Ваги</div><div class="v"><code>HF_HOME=/workspace/hf</code> на network volume ~100 ГБ — качати раз. HF <strong>Xet</strong> тягне ~45 ГБ за ~1 хв, тож повторне завантаження дешеве навіть без тому</div></div>
+      <div class="row"><div class="k">Образ</div><div class="v">Власний Docker (vLLM + парсери запечені) → старт = pull + run, без <code>pip install</code> щоразу</div></div>
+      <div class="row"><div class="k">Економія</div><div class="v">Авто-terminate за розкладом (cron/CI) + idle-stop · вимикай між сесіями · Community/Vast ≈ −40–50% до ціни</div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span> З досвіду реальних деплоїв</h2>
+    <div class="setup">
+      <div class="row"><div class="k">Час старту</div><div class="v">~4–5 хв від контейнера до готовності: Xet качає ваги ~1 хв, решту з'їдають завантаження в VRAM + <code>torch.compile</code> + warmup — <strong>завантаження вже НЕ вузьке місце</strong></div></div>
+      <div class="row"><div class="k">#1 стаття витрат</div><div class="v">Забутий увімкнений pod. Один запланований авто-terminate економить більше, ніж будь-який вибір GPU</div></div>
+      <div class="row"><div class="k">Надійність</div><div class="v">Найдешевший хост ≠ найнадійніший: low-stock інстанс може <strong>не стартувати контейнер</strong> (~5 хв втрати). Обирай надійний тир або роби retry/fallthrough на інший хост</div></div>
+      <div class="row"><div class="k">Persistence</div><div class="v">Pod-local диск гине при terminate → ваги качаються знову (з Xet це ~1 хв). Network volume = завантаження раз, але прив'язаний до одного датацентру (менший пул GPU)</div></div>
+      <div class="row"><div class="k">Швидкість</div><div class="v">6-bit dense ~47 tok/s; non-thinking MoE (Coder-Next) ~93 tok/s. «Повільно» у thinking-моделі — це reasoning перед відповіддю, не залізо</div></div>
     </div>
   </section>
 
   <footer>
-    <p class="note">Ціни — оцінки станом на середину 2026; GPU-маркетплейси змінюють ставки щодня. Перед розгортанням звіряй live-ставку та наявність мультикарткових інстансів. Self-host обраний заради приватності даних і повного контролю над стеком.</p>
+    <p class="note">Ціни та бенчмарки — оцінки станом на серпень 2026; GPU-маркетплейси змінюють ставки щодня, а моделі виходять щотижня. Перед розгортанням звіряй live-ставку, наявність інстансів і актуальні AWQ-квенти на HF. Self-host обраний заради приватності даних і повного контролю над стеком.</p>
   </footer>
 </div>
 
@@ -254,11 +266,12 @@
 
   const DEFAULTS = {
     gpus: [
-      { label: "A100 80GB · RunPod", rate: 1.40 },
-      { label: "H100 80GB · RunPod", rate: 2.20 },
-      { label: "A100 80GB · Vast.ai", rate: 0.90 }
+      { label: "A100 80GB · RunPod Secure", rate: 1.39 },
+      { label: "A100 80GB · RunPod Community", rate: 0.79 },
+      { label: "H100 80GB · RunPod", rate: 1.99 },
+      { label: "A100 80GB · Vast.ai", rate: 0.79 }
     ],
-    vol: 6
+    vol: 7
   };
 
   const hpd = $("hpd"), dpm = $("dpm"), rate = $("rate"), vol = $("vol");
