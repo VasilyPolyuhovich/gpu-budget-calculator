@@ -164,6 +164,7 @@
         <div class="field"><label for="dpm" data-i18n="f_dpm">Днів / місяць</label><input id="dpm" type="number" min="0" step="1" value="22" inputmode="numeric"></div>
         <div class="field"><label for="rate" data-i18n="f_rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" value="1.39" inputmode="decimal"></div>
         <div class="field"><label for="vol" data-i18n="f_vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" value="7" inputmode="decimal"></div>
+        <div class="field"><label for="seats" data-i18n="f_seats">Робочих місць</label><input id="seats" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
       </div>
 
       <div class="result">
@@ -172,8 +173,8 @@
           <span class="num" id="total">$129</span><span class="unit" id="unit" data-i18n="res_unit">/ міс</span>
         </div>
         <div class="breakdown" id="bd">
-          <span id="hm">88</span> <span data-i18n="bd_hpm">год/міс</span> × <span id="r2">$1.39</span> = <span id="compute">$122</span> <span data-i18n="bd_compute">compute</span><br>
-          + <span id="v2">$7</span> <span data-i18n="bd_volume">volume (24/7)</span>
+          <span id="perseat">$129</span> <span data-i18n="bd_perseat">/ місце</span> · <span id="hm">88</span> <span data-i18n="bd_hpm">год/міс</span> × <span id="r2">$1.39</span> + <span id="v2">$7</span> <span data-i18n="bd_volume">volume</span><br>
+          × <span id="seats2">1</span> <span data-i18n="bd_seats">місць</span> = <span id="teamtotal">$129</span> <span data-i18n="bd_team">команда</span>
         </div>
       </div>
 
@@ -193,7 +194,7 @@
         </div>
       </details>
     </div>
-    <p class="note" data-i18n="note01">Ставки орієнтовні (маркетплейс плаває — звіряй перед деплоєм). Ціни зберігаються у твоєму браузері; «лінк з цінами» вшиває їх у URL для шерингу.</p>
+    <p class="note" data-i18n="note01">Ставки орієнтовні (маркетплейс плаває — звіряй перед деплоєм). Ціни зберігаються у твоєму браузері; «лінк з цінами» вшиває їх у URL для шерингу. Команда = вартість одного місця × кількість; якщо network volume спільний — рахуй Volume один раз.</p>
   </section>
 
   <section>
@@ -293,11 +294,15 @@
       f_dpm: "Днів / місяць",
       f_rate: "Ставка $/год",
       f_vol: "Volume $/міс",
+      f_seats: "Робочих місць",
       res_cap: "Разом на місяць",
       res_unit: "/ міс",
       bd_hpm: "год/міс",
       bd_compute: "compute",
-      bd_volume: "volume (24/7)",
+      bd_volume: "volume",
+      bd_perseat: "/ місце",
+      bd_seats: "місць",
+      bd_team: "команда",
       formula: "<b>Разом</b> = ( год/день × днів/міс × $/год ) + volume<sub>міс</sub>",
       cfg_summary: "Налаштування цін та GPU",
       cfg_h_name: "Назва (GPU · провайдер)",
@@ -305,7 +310,7 @@
       btn_add: "+ Додати GPU",
       btn_reset: "Скинути до типових",
       btn_share: "Скопіювати лінк з цінами",
-      note01: "Ставки орієнтовні (маркетплейс плаває — звіряй перед деплоєм). Ціни зберігаються у твоєму браузері; «лінк з цінами» вшиває їх у URL для шерингу.",
+      note01: "Ставки орієнтовні (маркетплейс плаває — звіряй перед деплоєм). Ціни зберігаються у твоєму браузері; «лінк з цінами» вшиває їх у URL для шерингу. Команда = вартість одного місця × кількість; якщо network volume спільний — рахуй Volume один раз.",
       s02_title: "Готові сценарії",
       th_mode: "Режим",
       th_hpm: "Год/міс",
@@ -399,11 +404,15 @@
       f_dpm: "Days / month",
       f_rate: "Rate $/hr",
       f_vol: "Volume $/mo",
+      f_seats: "Seats",
       res_cap: "Total per month",
       res_unit: "/ mo",
       bd_hpm: "h/mo",
       bd_compute: "compute",
-      bd_volume: "volume (24/7)",
+      bd_volume: "volume",
+      bd_perseat: "/ seat",
+      bd_seats: "seats",
+      bd_team: "team",
       formula: "<b>Total</b> = ( hours/day × days/mo × $/hr ) + volume<sub>mo</sub>",
       cfg_summary: "Price & GPU settings",
       cfg_h_name: "Name (GPU · provider)",
@@ -411,7 +420,7 @@
       btn_add: "+ Add GPU",
       btn_reset: "Reset to defaults",
       btn_share: "Copy link with prices",
-      note01: "Rates are indicative (the market fluctuates — verify before deploying). Prices are saved in your browser; the “link with prices” embeds them in the URL for sharing.",
+      note01: "Rates are indicative (the market fluctuates — verify before deploying). Prices are saved in your browser; the “link with prices” embeds them in the URL for sharing. Team = one-seat cost × count; if the network volume is shared, count Volume once.",
       s02_title: "Ready-made scenarios",
       th_mode: "Mode",
       th_hpm: "Hrs/mo",
@@ -576,12 +585,15 @@
   function recalc() {
     const h = parseFloat(hpd.value) || 0, d = parseFloat(dpm.value) || 0;
     const r = parseFloat(rate.value) || 0, v = parseFloat(vol.value) || 0;
-    const hoursMonth = h * d, compute = hoursMonth * r, total = compute + v;
-    $("total").textContent = money(total);
+    const seats = Math.max(1, Math.floor(parseFloat($("seats").value) || 1));
+    const hoursMonth = h * d, perSeat = hoursMonth * r + v, team = perSeat * seats;
+    $("total").textContent = money(team);
+    $("perseat").textContent = money(perSeat);
     $("hm").textContent = (Math.round(hoursMonth * 10) / 10).toLocaleString("en-US");
     $("r2").textContent = "$" + r.toFixed(2);
-    $("compute").textContent = money(compute);
     $("v2").textContent = money(v);
+    $("seats2").textContent = seats.toLocaleString("en-US");
+    $("teamtotal").textContent = money(team);
   }
 
   function renderGpuButtons() {
@@ -652,6 +664,7 @@
     recalc();
   }));
   rate.addEventListener("input", () => { document.querySelectorAll("#gpus .gpu-opt").forEach(b => b.setAttribute("aria-pressed", "false")); recalc(); });
+  $("seats").addEventListener("input", recalc);
 
   document.querySelectorAll("#presets .preset").forEach(btn => btn.addEventListener("click", () => {
     document.querySelectorAll("#presets .preset").forEach(b => b.setAttribute("aria-pressed", "false"));
