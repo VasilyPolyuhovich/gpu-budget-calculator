@@ -143,7 +143,7 @@
 
   <p class="eyebrow" data-i18n="eyebrow">Self-host LLM · планувальник бюджету GPU</p>
   <h1 data-i18n="h1">Кошторис оренди GPU та вибір моделі</h1>
-  <p class="lede" data-i18n-html="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (Qwen3.6-27B / Coder-Next) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком. <strong>Дані звірено з реальними деплоями (серпень 2026).</strong></p>
+  <p class="lede" data-i18n-html="lede">Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (Qwen3.6-27B / Coder-Next) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком. <strong>Ставки RunPod — з реальних деплоїв; позначені * не перевіряли.</strong></p>
 
   <section>
     <h2><span class="n">01</span> <span data-i18n="s01_title">Калькулятор місячної вартості</span></h2>
@@ -201,15 +201,15 @@
     <h2><span class="n">02</span> <span data-i18n="s02_title">Готові сценарії</span></h2>
     <div class="scroll">
       <table>
-        <thead><tr><th data-i18n="th_mode">Режим</th><th class="num" data-i18n="th_hpm">Год/міс</th><th class="num">A100 Secure $1.39</th><th class="num">A100 Community $0.79</th><th class="num">H100 $1.99</th></tr></thead>
+        <thead><tr><th data-i18n="th_mode">Режим</th><th class="num" data-i18n="th_hpm">Год/міс</th><th class="num">A100 Secure $1.39</th><th class="num">Vast.ai * $0.67</th><th class="num">H100 Secure $2.89</th></tr></thead>
         <tbody>
-          <tr><td data-i18n="row_light">Легкий (2 год × 20)</td><td class="num">40</td><td class="num">~$63</td><td class="num">~$39</td><td class="num">~$87</td></tr>
-          <tr class="pick"><td><span data-i18n="row_medium">Середній (4 год × 22)</span> <span class="tag" data-i18n="tag_start">старт</span></td><td class="num">88</td><td class="num">~$129</td><td class="num">~$77</td><td class="num">~$182</td></tr>
-          <tr><td data-i18n="row_heavy">Важкий (8 год × 22)</td><td class="num">176</td><td class="num">~$252</td><td class="num">~$146</td><td class="num">~$357</td></tr>
+          <tr><td data-i18n="row_light">Легкий (2 год × 20)</td><td class="num">40</td><td class="num">~$63</td><td class="num">~$34</td><td class="num">~$123</td></tr>
+          <tr class="pick"><td><span data-i18n="row_medium">Середній (4 год × 22)</span> <span class="tag" data-i18n="tag_start">старт</span></td><td class="num">88</td><td class="num">~$129</td><td class="num">~$66</td><td class="num">~$261</td></tr>
+          <tr><td data-i18n="row_heavy">Важкий (8 год × 22)</td><td class="num">176</td><td class="num">~$252</td><td class="num">~$125</td><td class="num">~$516</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="note" data-i18n-html="note02">Суми включають ~$7/міс volume (100 ГБ × $0.07). <strong>Secure</strong> = дата-центри провайдера з SLA (надійний старт); <strong>Community</strong>/маркетплейс — дешевше, але хост може не піднятись. «Старт» = рекомендована конфігурація для обкатки.</p>
+    <p class="note" data-i18n-html="note02">Суми включають ~$7/міс volume (100 ГБ × $0.07). <strong>Secure</strong> = дата-центри RunPod з SLA (надійний старт, наш вимір); <strong>Vast.ai *</strong> — маркетплейс, найдешевше, але host-dependent і ми його не перевіряли. «Старт» = рекомендована конфігурація для обкатки.</p>
   </section>
 
   <section>
@@ -217,7 +217,7 @@
     <div class="warn">
       <div class="h" data-i18n="warn_h">⚠ Always-on = ×8 бюджету</div>
       <p data-i18n="warn_p1">Уся економіка тримається на тому, що pod вимикається після сесії. Якщо він працює 24/7:</p>
-      <p class="mono" data-i18n-html="warn_mono">A100: $1.39 × 730 год ≈ $1 015 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $1.99 × 730 ≈ $1 453 / міс</p>
+      <p class="mono" data-i18n-html="warn_mono">A100: $1.39 × 730 год ≈ $1 015 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $2.89 × 730 ≈ $2 110 / міс</p>
       <p data-i18n-html="warn_p2"><strong>Запобіжники (з практики):</strong> <strong>запланований авто-terminate за розкладом</strong> (напр. cron/CI щовечора) — ловить навіть pod-и, підняті через веб-консоль без idle-stop · idle auto-stop за N хв бездіяльності · billing alert (~$200) · ваги на volume, тож наступний старт швидкий і нічого не втрачаєш.</p>
     </div>
   </section>
@@ -249,7 +249,7 @@
       <div class="row"><div class="k" data-i18n="k_access">Доступ</div><div class="v" data-i18n-html="v_access">Завжди <code>--api-key</code>; стабільний URL через reverse-proxy (напр. Cloudflare Worker → поточний pod), щоб не переписувати per-pod</div></div>
       <div class="row"><div class="k" data-i18n="k_weights">Ваги</div><div class="v" data-i18n-html="v_weights"><code>HF_HOME=/workspace/hf</code> на network volume ~100 ГБ — качати раз. HF <strong>Xet</strong> тягне ~45 ГБ за ~1 хв, тож повторне завантаження дешеве навіть без тому</div></div>
       <div class="row"><div class="k" data-i18n="k_image">Образ</div><div class="v" data-i18n-html="v_image">Власний Docker (vLLM + парсери запечені) → старт = pull + run, без <code>pip install</code> щоразу</div></div>
-      <div class="row"><div class="k" data-i18n="k_saving">Економія</div><div class="v" data-i18n-html="v_saving">Авто-terminate за розкладом (cron/CI) + idle-stop · вимикай між сесіями · Community/Vast ≈ −40–50% до ціни</div></div>
+      <div class="row"><div class="k" data-i18n="k_saving">Економія</div><div class="v" data-i18n-html="v_saving">Авто-terminate за розкладом (cron/CI) + idle-stop · вимикай між сесіями · маркетплейс (Vast *) ≈ −50% до ціни</div></div>
     </div>
   </section>
 
@@ -265,6 +265,7 @@
   </section>
 
   <footer>
+    <p class="note" data-i18n="footer_star">* Vast.ai ми не використовували — ставка з публічних лістингів (маркетплейс, host-dependent, часто interruptible), не з наших деплоїв.</p>
     <p class="note" data-i18n="footer_note">Ціни та бенчмарки — оцінки станом на серпень 2026; GPU-маркетплейси змінюють ставки щодня, а моделі виходять щотижня. Перед розгортанням звіряй live-ставку, наявність інстансів і актуальні AWQ-квенти на HF. Self-host обраний заради приватності даних і повного контролю над стеком.</p>
   </footer>
 </div>
@@ -273,7 +274,7 @@
   "use strict";
   const $ = (id) => document.getElementById(id);
   const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
-  const LS_KEY = "gpuBudgetConfig.v1";
+  const LS_KEY = "gpuBudgetConfig.v2";
   const LANG_KEY = "gpuBudgetLang.v1";
 
   const T = {
@@ -282,7 +283,7 @@
       meta_desc: "Інтерактивний кошторис оренди GPU під self-host open-weight LLM (Qwen3.6/Coder-Next) з редагованими цінами. Оновлено серпень 2026.",
       eyebrow: "Self-host LLM · планувальник бюджету GPU",
       h1: "Кошторис оренди GPU та вибір моделі",
-      lede: "Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (Qwen3.6-27B / Coder-Next) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком. <strong>Дані звірено з реальними деплоями (серпень 2026).</strong>",
+      lede: "Одна сторінка під воркфлоу: on-demand pod з open-weight моделлю (Qwen3.6-27B / Coder-Next) через vLLM, ваги на persistent volume, білінг лише за години роботи. Ціни редагуються й зберігаються локально — підстав свої, поділись лінком. <strong>Ставки RunPod — з реальних деплоїв; позначені * не перевіряли.</strong>",
       s01_title: "Калькулятор місячної вартості",
       aria_presets: "Пресети інтенсивності",
       aria_gpus: "Вибір GPU",
@@ -318,11 +319,11 @@
       row_medium: "Середній (4 год × 22)",
       tag_start: "старт",
       row_heavy: "Важкий (8 год × 22)",
-      note02: "Суми включають ~$7/міс volume (100 ГБ × $0.07). <strong>Secure</strong> = дата-центри провайдера з SLA (надійний старт); <strong>Community</strong>/маркетплейс — дешевше, але хост може не піднятись. «Старт» = рекомендована конфігурація для обкатки.",
+      note02: "Суми включають ~$7/міс volume (100 ГБ × $0.07). <strong>Secure</strong> = дата-центри RunPod з SLA (надійний старт, наш вимір); <strong>Vast.ai *</strong> — маркетплейс, найдешевше, але host-dependent і ми його не перевіряли. «Старт» = рекомендована конфігурація для обкатки.",
       s03_title: "Головна пастка — забути вимкнути",
       warn_h: "⚠ Always-on = ×8 бюджету",
       warn_p1: "Уся економіка тримається на тому, що pod вимикається після сесії. Якщо він працює 24/7:",
-      warn_mono: "A100: $1.39 × 730 год ≈ $1 015 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $1.99 × 730 ≈ $1 453 / міс",
+      warn_mono: "A100: $1.39 × 730 год ≈ $1 015 / міс&nbsp;&nbsp;·&nbsp;&nbsp;H100: $2.89 × 730 ≈ $2 110 / міс",
       warn_p2: "<strong>Запобіжники (з практики):</strong> <strong>запланований авто-terminate за розкладом</strong> (напр. cron/CI щовечора) — ловить навіть pod-и, підняті через веб-консоль без idle-stop · idle auto-stop за N хв бездіяльності · billing alert (~$200) · ваги на volume, тож наступний старт швидкий і нічого не втрачаєш.",
       s04_title: "Яку модель (серпень 2026)",
       th_model: "Модель",
@@ -366,7 +367,7 @@
       k_image: "Образ",
       v_image: "Власний Docker (vLLM + парсери запечені) → старт = pull + run, без <code>pip install</code> щоразу",
       k_saving: "Економія",
-      v_saving: "Авто-terminate за розкладом (cron/CI) + idle-stop · вимикай між сесіями · Community/Vast ≈ −40–50% до ціни",
+      v_saving: "Авто-terminate за розкладом (cron/CI) + idle-stop · вимикай між сесіями · маркетплейс (Vast *) ≈ −50% до ціни",
       s06_title: "З досвіду реальних деплоїв",
       k_start: "Час старту",
       v_start: "~4–5 хв від контейнера до готовності: Xet качає ваги ~1 хв, решту з'їдають завантаження в VRAM + <code>torch.compile</code> + warmup — <strong>завантаження вже НЕ вузьке місце</strong>",
@@ -378,6 +379,7 @@
       v_persist: "Pod-local диск гине при terminate → ваги качаються знову (з Xet це ~1 хв). Network volume = завантаження раз, але прив'язаний до одного датацентру (менший пул GPU)",
       k_speed: "Швидкість",
       v_speed: "6-bit dense ~47 tok/s; non-thinking MoE (Coder-Next) ~93 tok/s. «Повільно» у thinking-моделі — це reasoning перед відповіддю, не залізо",
+      footer_star: "* Vast.ai ми не використовували — ставка з публічних лістингів (маркетплейс, host-dependent, часто interruptible), не з наших деплоїв.",
       footer_note: "Ціни та бенчмарки — оцінки станом на серпень 2026; GPU-маркетплейси змінюють ставки щодня, а моделі виходять щотижня. Перед розгортанням звіряй live-ставку, наявність інстансів і актуальні AWQ-квенти на HF. Self-host обраний заради приватності даних і повного контролю над стеком.",
       new_gpu: "Новий GPU · провайдер",
       toast_reset: "Скинуто",
@@ -392,7 +394,7 @@
       meta_desc: "Interactive GPU rental budget for self-hosting open-weight LLMs (Qwen3.6/Coder-Next) with editable prices. Updated August 2026.",
       eyebrow: "Self-hosted LLM · GPU cost planner",
       h1: "GPU rental budget & model picker",
-      lede: "One page for the workflow: an on-demand pod running an open-weight model (Qwen3.6-27B / Coder-Next) via vLLM, weights on a persistent volume, billed only for hours in use. Prices are editable and saved locally — plug in yours, share the link. <strong>Figures cross-checked against real deploys (August 2026).</strong>",
+      lede: "One page for the workflow: an on-demand pod running an open-weight model (Qwen3.6-27B / Coder-Next) via vLLM, weights on a persistent volume, billed only for hours in use. Prices are editable and saved locally — plug in yours, share the link. <strong>RunPod rates are from real deploys; entries marked * are unverified.</strong>",
       s01_title: "Monthly cost calculator",
       aria_presets: "Intensity presets",
       aria_gpus: "GPU selection",
@@ -428,11 +430,11 @@
       row_medium: "Medium (4 h × 22)",
       tag_start: "start",
       row_heavy: "Heavy (8 h × 22)",
-      note02: "Totals include ~$7/mo volume (100 GB × $0.07). <strong>Secure</strong> = provider data centers with an SLA (reliable start); <strong>Community</strong>/marketplace is cheaper but a host may fail to boot. “Start” = the recommended config to break in the workflow.",
+      note02: "Totals include ~$7/mo volume (100 GB × $0.07). <strong>Secure</strong> = RunPod data centers with an SLA (reliable start, our measurement); <strong>Vast.ai *</strong> = marketplace, cheapest but host-dependent and unverified by us. “Start” = the recommended config to break in the workflow.",
       s03_title: "The main trap — forgetting to shut down",
       warn_h: "⚠ Always-on = ×8 the budget",
       warn_p1: "The whole economy relies on shutting the pod down after a session. If it runs 24/7:",
-      warn_mono: "A100: $1.39 × 730 h ≈ $1,015 / mo&nbsp;&nbsp;·&nbsp;&nbsp;H100: $1.99 × 730 ≈ $1,453 / mo",
+      warn_mono: "A100: $1.39 × 730 h ≈ $1,015 / mo&nbsp;&nbsp;·&nbsp;&nbsp;H100: $2.89 × 730 ≈ $2,110 / mo",
       warn_p2: "<strong>Safeguards (from practice):</strong> <strong>scheduled auto-terminate</strong> (e.g. a nightly cron/CI job) — catches even pods launched from the web console with no idle-stop · idle auto-stop after N idle minutes · billing alert (~$200) · weights on a volume, so the next start is fast and you lose nothing.",
       s04_title: "Which model (August 2026)",
       th_model: "Model",
@@ -476,7 +478,7 @@
       k_image: "Image",
       v_image: "Custom Docker (vLLM + parsers baked in) → start = pull + run, no <code>pip install</code> each boot",
       k_saving: "Savings",
-      v_saving: "Scheduled auto-terminate (cron/CI) + idle-stop · shut down between sessions · Community/Vast ≈ −40–50% on price",
+      v_saving: "Scheduled auto-terminate (cron/CI) + idle-stop · shut down between sessions · marketplace (Vast *) ≈ −50% on price",
       s06_title: "From real deploys",
       k_start: "Startup time",
       v_start: "~4–5 min from container to ready: Xet pulls weights in ~1 min; the rest is loading into VRAM + <code>torch.compile</code> + warmup — <strong>download is no longer the bottleneck</strong>",
@@ -488,6 +490,7 @@
       v_persist: "Pod-local disk dies on terminate → weights re-download (with Xet ~1 min). A network volume = download once, but it's pinned to one data center (smaller GPU pool)",
       k_speed: "Speed",
       v_speed: "6-bit dense ~47 tok/s; non-thinking MoE (Coder-Next) ~93 tok/s. “Slow” on a thinking model is the reasoning before the answer, not the hardware",
+      footer_star: "* We have not used Vast.ai — its rate is from public listings (marketplace, host-dependent, often interruptible), not from our own deploys.",
       footer_note: "Prices and benchmarks are estimates as of August 2026; GPU marketplaces change rates daily and models ship weekly. Before deploying, verify the live rate, instance availability and current AWQ quants on HF. Self-hosting is chosen for data privacy and full control of the stack.",
       new_gpu: "New GPU · provider",
       toast_reset: "Reset",
@@ -502,9 +505,9 @@
   const DEFAULTS = {
     gpus: [
       { label: "A100 80GB · RunPod Secure", rate: 1.39 },
-      { label: "A100 80GB · RunPod Community", rate: 0.79 },
-      { label: "H100 80GB · RunPod", rate: 1.99 },
-      { label: "A100 80GB · Vast.ai", rate: 0.79 }
+      { label: "A100 80GB · RunPod SXM", rate: 1.59 },
+      { label: "H100 80GB · RunPod Secure", rate: 2.89 },
+      { label: "A100 80GB · Vast.ai *", rate: 0.67 }
     ],
     vol: 7
   };
