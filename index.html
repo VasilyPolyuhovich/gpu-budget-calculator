@@ -23,6 +23,7 @@
   .mini .f input:focus-visible { outline:none; }
   .stepper button { cursor:pointer; }
   .seg button { cursor:pointer; }
+  .apis button.api { background:transparent; font:inherit; font-family:var(--mono); font-size:.74rem; letter-spacing:.02em; }
   @media (max-width:520px) { .cmp { grid-template-columns:1fr; } .beyond { grid-template-columns:1fr; } }
 </style>
 </head>
@@ -41,7 +42,7 @@
 
   <div class="card">
     <p class="lbl" data-i18n="load_label">Навантаження на людину</p>
-    <div class="seg" id="seg">
+    <div class="seg" id="seg" role="group" data-i18n-aria="aria_presets">
       <button type="button" data-preset="light" data-i18n="preset_light">Легкий · 2 год × 20</button>
       <button type="button" data-preset="medium" class="on" data-i18n="preset_medium">Середній · 4 год × 22</button>
       <button type="button" data-preset="heavy" data-i18n="preset_heavy">Важкий · 8 год × 22</button>
@@ -57,7 +58,7 @@
     </div>
 
     <div class="result">
-      <div class="big"><span class="num" id="total">$0</span><span class="u" data-i18n="res_unit">/ міс</span></div>
+      <div class="big"><span class="num" id="total" aria-live="polite">$0</span><span class="u" data-i18n="res_unit">/ міс</span></div>
       <p class="sub"><span id="basisLine"></span></p>
     </div>
 
@@ -65,7 +66,7 @@
       <summary data-i18n="adv_toggle">Розширено — GPU · ставка · volume · години/дні</summary>
       <div class="disc-body">
         <p class="lbl" data-i18n="gpu_cap">GPU / провайдер (задає ставку $/год)</p>
-        <div class="apis" id="gpuChips"></div>
+        <div class="apis" id="gpuChips" role="group" data-i18n-aria="aria_gpus"></div>
         <div class="mini">
           <div class="f"><label data-i18n="f_rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" inputmode="decimal"></div>
           <div class="f"><label data-i18n="f_vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" inputmode="decimal"></div>
@@ -79,7 +80,7 @@
   <div class="vs">
     <h3 data-i18n="vs_title">А якби платити за API?</h3>
     <p class="hint" data-i18n="vs_hint">Обери провайдера. Обсяг оцінено з пресета (можна змінити в Розширено).</p>
-    <div class="apis" id="apiChips"></div>
+    <div class="apis" id="apiChips" role="group" aria-label="API"></div>
     <div class="cmp">
       <div class="b self"><div class="k" data-i18n="vs_self">Self-host</div><div class="n" id="selfTile">$0</div></div>
       <div class="b"><div class="k" id="apiName">API</div><div class="n" id="apiTile">$0</div></div>
@@ -148,7 +149,7 @@
     $("total").textContent = money(r.team);
     $("seatsVal").textContent = state.seats;
     const gpuLabel = D.GPUS[state.gpuIdx] ? chipLabel(D.GPUS[state.gpuIdx].label) : "custom";
-    $("basisLine").textContent = money(r.per) + " " + window.I18N[state.lang].bd_perseat + " × " + state.seats +
+    $("basisLine").textContent = money(r.per) + " " + window.I18N[state.lang].bd_perseat +
       " · " + gpuLabel + " $" + Number(state.rate).toFixed(2) + " + $" + Number(state.volume) + " volume";
     $("selfTile").textContent = money(r.team);
     $("apiTile").textContent = money(r.apiTeam);
@@ -160,19 +161,21 @@
       mtok: r.mtokTeam.toFixed(1), af: Math.round(state.assumption.activeFraction * 100),
       tps: state.assumption.tokPerSec, im: state.assumption.inputMultiplier
     });
-    document.querySelectorAll("#seg [data-preset]").forEach((b) => b.classList.toggle("on", b.dataset.preset === state.preset));
-    document.querySelectorAll("#gpuChips .api").forEach((c, i) => c.classList.toggle("on", i === state.gpuIdx));
-    document.querySelectorAll("#apiChips .api").forEach((c, i) => c.classList.toggle("on", i === state.apiIdx));
+    document.querySelectorAll("#seg [data-preset]").forEach((b) => {
+      const on = b.dataset.preset === state.preset; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on);
+    });
+    document.querySelectorAll("#gpuChips .api").forEach((c, i) => { const on = i === state.gpuIdx; c.classList.toggle("on", on); c.setAttribute("aria-pressed", on); });
+    document.querySelectorAll("#apiChips .api").forEach((c, i) => { const on = i === state.apiIdx; c.classList.toggle("on", on); c.setAttribute("aria-pressed", on); });
     $("rate").value = state.rate; $("vol").value = state.volume; $("hpd").value = state.hoursDay; $("dpm").value = state.daysMonth;
     save();
   }
 
   function buildChips() {
     $("gpuChips").innerHTML = D.GPUS.map((g, i) =>
-      '<span class="api" data-i="' + i + '">' + chipLabel(g.label) + ' <span class="p">$' + g.rate.toFixed(2) + '</span></span>').join("");
+      '<button type="button" class="api" data-i="' + i + '">' + chipLabel(g.label) + ' <span class="p">$' + g.rate.toFixed(2) + '</span></button>').join("");
     $("gpuChips").querySelectorAll(".api").forEach((c) => c.onclick = () => { state.gpuIdx = +c.dataset.i; state.rate = D.GPUS[state.gpuIdx].rate; render(); });
     $("apiChips").innerHTML = D.APIS.map((a, i) =>
-      '<span class="api" data-i="' + i + '">' + a.label + ' <span class="p">$' + a.pricePerMtok.toFixed(2) + '</span></span>').join("");
+      '<button type="button" class="api" data-i="' + i + '">' + a.label + ' <span class="p">$' + a.pricePerMtok.toFixed(2) + '</span></button>').join("");
     $("apiChips").querySelectorAll(".api").forEach((c) => c.onclick = () => { state.apiIdx = +c.dataset.i; render(); });
   }
 
@@ -184,7 +187,7 @@
   ["rate", "vol", "hpd", "dpm"].forEach((id) => $(id).oninput = () => {
     state.rate = parseFloat($("rate").value) || 0; state.volume = parseFloat($("vol").value) || 0;
     state.hoursDay = parseFloat($("hpd").value) || 0; state.daysMonth = parseFloat($("dpm").value) || 0;
-    state.gpuIdx = -1; render();
+    state.gpuIdx = -1; state.preset = ""; render();   // manual edit → custom (de-highlight preset + GPU chip)
   });
   function setLang(l) { state.lang = l; localStorage.setItem(LANG_KEY, l); window.applyI18n(document, l); $("langToggle").textContent = l === "uk" ? "EN" : "UK"; render(); }
   $("langToggle").onclick = () => setLang(state.lang === "uk" ? "en" : "uk");
