@@ -241,8 +241,17 @@
   }
 
   function buildGpuChips() {
-    $("gpuChips").innerHTML = state.gpus.map((g, i) => '<button type="button" class="api" data-i="' + i + '">' + chipLabel(g.label) + ' <span class="p">$' + Number(g.rate).toFixed(2) + '</span></button>').join("");
-    $("gpuChips").querySelectorAll(".api").forEach((c) => c.onclick = () => { state.gpuIdx = +c.dataset.i; state.rate = state.gpus[state.gpuIdx].rate; render(); });
+    // GPU labels can come from the ?c= URL param — build with textContent (NOT innerHTML) to avoid reflected XSS.
+    const box = $("gpuChips"); box.textContent = "";
+    state.gpus.forEach((g, i) => {
+      const b = document.createElement("button");
+      b.type = "button"; b.className = "api"; b.dataset.i = i;
+      b.appendChild(document.createTextNode(chipLabel(g.label) + " "));
+      const p = document.createElement("span"); p.className = "p"; p.textContent = "$" + Number(g.rate).toFixed(2);
+      b.appendChild(p);
+      b.onclick = () => { state.gpuIdx = +b.dataset.i; state.rate = state.gpus[state.gpuIdx].rate; render(); };
+      box.appendChild(b);
+    });
   }
   function buildApiChips() {
     $("apiChips").innerHTML = D.APIS.map((a, i) => '<button type="button" class="api" data-i="' + i + '">' + a.label + ' <span class="p">$' + a.pricePerMtok.toFixed(2) + '</span></button>').join("");
