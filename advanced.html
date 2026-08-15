@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU Budget — Advanced</title>
+<meta name="description" content="Advanced GPU self-host cost calculator: full control, price editor, API comparison, models & vLLM reference.">
+<link rel="stylesheet" href="assets/theme.css">
+<style>
+  .eyebrow { font-family:var(--mono); font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent2); margin:0 0 .6rem; }
+  h2 { font-family:var(--mono); font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--faint);
+       margin:0 0 1rem; padding-bottom:.5rem; border-bottom:1px solid var(--line); display:flex; align-items:baseline; gap:.6rem; }
+  h2 .n { color:var(--accent); font-weight:700; }
+  section { margin-top:clamp(2rem,5vw,3.2rem); }
+  .cap { font-family:var(--mono); font-size:.66rem; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); margin-bottom:.5rem; }
+  .fields { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:1rem 1.1rem; margin-top:1rem; }
+  .field label { display:block; font-family:var(--mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); margin-bottom:.3rem; }
+  .field input { width:100%; font-family:var(--mono); font-size:1.02rem; font-variant-numeric:tabular-nums; color:var(--ink);
+                 background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:.5rem .6rem; }
+  .formula { margin-top:1.2rem; font-family:var(--mono); font-size:.8rem; color:var(--soft); background:var(--paper);
+             border:1px solid var(--line); border-radius:8px; padding:.65rem .8rem; overflow-x:auto; white-space:nowrap; }
+  .formula b { color:var(--accent2); }
+  details.disc > summary { list-style:none; cursor:pointer; padding:.7rem .9rem; font-family:var(--mono); font-size:.78rem; color:var(--soft); display:flex; gap:.5rem; user-select:none; }
+  details.disc > summary::-webkit-details-marker { display:none; }
+  details.disc > summary::before { content:"▸"; color:var(--accent); }
+  details.disc[open] > summary::before { content:"▾"; }
+  .disc-body { padding:0 .9rem .9rem; }
+  .cfg-head, .cfg-item { display:grid; grid-template-columns:1fr 90px 34px; gap:.5rem; align-items:center; }
+  .cfg-head span { font-family:var(--mono); font-size:.6rem; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); }
+  .cfg-list { display:grid; gap:.5rem; margin:.4rem 0 .8rem; }
+  .cfg-item input { width:100%; font-family:var(--mono); font-size:.85rem; color:var(--ink); background:var(--paper); border:1px solid var(--line); border-radius:7px; padding:.4rem .55rem; }
+  .cfg-item .del { border:1px solid var(--line); background:transparent; color:#e07070; border-radius:7px; cursor:pointer; height:34px; }
+  .cfg-actions { display:flex; flex-wrap:wrap; gap:.5rem; }
+  .btn { font-family:var(--mono); font-size:.78rem; padding:.5rem .8rem; border-radius:8px; border:1px solid var(--line); background:transparent; color:var(--soft); cursor:pointer; }
+  .btn:hover { border-color:var(--accent); color:var(--ink); }
+  .toast { font-family:var(--mono); font-size:.72rem; color:var(--accent2); margin-left:.4rem; opacity:0; transition:opacity .2s; }
+  .toast.show { opacity:1; }
+  .seg button, .stepper button, .apis button.api { cursor:pointer; }
+  .apis button.api { background:transparent; font-family:var(--mono); font-size:.74rem; }
+  .mini { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:.55rem; margin:.6rem 0; }
+  .mini .f { background:var(--paper); border:1px solid var(--line); border-radius:9px; padding:.4rem .6rem; }
+  .mini .f label { display:block; font-family:var(--mono); font-size:.58rem; letter-spacing:.08em; text-transform:uppercase; color:var(--faint); }
+  .mini .f input { width:100%; border:0; background:transparent; color:var(--ink); font-family:var(--mono); font-size:.95rem; }
+  a { color:var(--accent2); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="brand">◇ Self-host LLM</div>
+    <div class="top-right">
+      <button class="pill" id="langToggle" type="button" aria-label="Language">EN</button>
+      <a class="pill link" href="index.html" data-i18n="link_simple">← Простий</a>
+    </div>
+  </div>
+
+  <p class="eyebrow" data-i18n="eyebrow">Self-host LLM · планувальник бюджету GPU</p>
+  <h1 data-i18n="adv_h1">Розширений калькулятор і референс</h1>
+  <p class="lede" data-i18n-html="adv_lede"></p>
+
+  <section>
+    <h2><span class="n">01</span> <span data-i18n="s01_title">Калькулятор місячної вартості</span></h2>
+    <div class="card">
+      <p class="lbl" data-i18n="load_label">Навантаження на людину</p>
+      <div class="seg" id="seg" role="group" data-i18n-aria="aria_presets">
+        <button type="button" data-preset="light" data-i18n="preset_light">Легкий</button>
+        <button type="button" data-preset="medium" class="on" data-i18n="preset_medium">Середній</button>
+        <button type="button" data-preset="heavy" data-i18n="preset_heavy">Важкий</button>
+      </div>
+      <p class="cap" data-i18n="gpu_cap" style="margin-top:1rem">GPU / провайдер (задає ставку $/год)</p>
+      <div class="apis" id="gpuChips" role="group" data-i18n-aria="aria_gpus"></div>
+      <div class="fields">
+        <div class="field"><label for="hpd" data-i18n="f_hpd">Годин / день</label><input id="hpd" type="number" min="0" step="0.5" inputmode="decimal"></div>
+        <div class="field"><label for="dpm" data-i18n="f_dpm">Днів / місяць</label><input id="dpm" type="number" min="0" step="1" inputmode="numeric"></div>
+        <div class="field"><label for="rate" data-i18n="f_rate">Ставка $/год</label><input id="rate" type="number" min="0" step="0.05" inputmode="decimal"></div>
+        <div class="field"><label for="vol" data-i18n="f_vol">Volume $/міс</label><input id="vol" type="number" min="0" step="1" inputmode="decimal"></div>
+        <div class="field"><label for="seatsIn" data-i18n="f_seats">Робочих місць</label><input id="seatsIn" type="number" min="1" step="1" inputmode="numeric"></div>
+      </div>
+      <div class="result">
+        <div class="big"><span class="num" id="total" aria-live="polite">$0</span><span class="u" data-i18n="res_unit">/ міс</span></div>
+        <p class="sub"><span id="basisLine"></span></p>
+      </div>
+      <div class="formula" data-i18n-html="formula"></div>
+      <details class="disc">
+        <summary data-i18n="cfg_summary">Налаштування цін та GPU</summary>
+        <div class="disc-body">
+          <div class="cfg-head"><span data-i18n="cfg_h_name">Назва</span><span data-i18n="cfg_h_rate">$/год</span><span></span></div>
+          <div class="cfg-list" id="cfgList"></div>
+          <div class="cfg-actions">
+            <button class="btn" id="addGpu" type="button" data-i18n="btn_add">+ Додати GPU</button>
+            <button class="btn" id="resetCfg" type="button" data-i18n="btn_reset">Скинути до типових</button>
+            <button class="btn" id="shareCfg" type="button" data-i18n="btn_share">Скопіювати лінк з цінами</button>
+            <span class="toast" id="toast"></span>
+          </div>
+        </div>
+      </details>
+    </div>
+    <p class="note" data-i18n="note01"></p>
+  </section>
+
+  <section>
+    <h2><span class="n">02</span> <span data-i18n="vs_title_adv">Порівняння з платними API</span></h2>
+    <div class="vs">
+      <p class="hint" data-i18n="vs_hint"></p>
+      <div class="apis" id="apiChips" role="group" aria-label="API"></div>
+      <div class="cmp">
+        <div class="b self"><div class="k" data-i18n="vs_self">Self-host</div><div class="n" id="selfTile">$0</div></div>
+        <div class="b"><div class="k" id="apiName">API</div><div class="n" id="apiTile">$0</div></div>
+      </div>
+      <div class="verdict" id="verdict"></div>
+      <div class="mini">
+        <div class="f"><label data-i18n="asm_active">Активна генерація %</label><input id="asmActive" type="number" min="0" max="100" step="1" inputmode="numeric"></div>
+        <div class="f"><label data-i18n="asm_tps">tok/s</label><input id="asmTps" type="number" min="0" step="1" inputmode="numeric"></div>
+        <div class="f"><label data-i18n="asm_input">Вхід ×</label><input id="asmInput" type="number" min="0" step="0.5" inputmode="decimal"></div>
+      </div>
+      <p class="usage" id="usageLine"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">03</span> <span data-i18n="s03_title">Головна пастка — забути вимкнути</span></h2>
+    <div class="warn">
+      <div class="h" data-i18n="warn_h">⚠ Always-on = ×8 бюджету</div>
+      <p data-i18n="warn_p1"></p>
+      <p class="mono" data-i18n-html="warn_mono"></p>
+      <p data-i18n-html="warn_p2"></p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">04</span> <span data-i18n="s04_title">Яку модель</span></h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th data-i18n="th_model">Модель</th><th data-i18n="th_type">Тип</th><th class="num" data-i18n="th_size">Розмір</th><th data-i18n="th_hw">Залізо</th><th class="num">SWE-bench</th><th data-i18n="th_when">Коли брати</th></tr></thead>
+        <tbody>
+          <tr class="pick"><td>Qwen3.6-27B <span class="tag" data-i18n="tag_single">1× карта</span></td><td data-i18n="r1_type"></td><td class="num" data-i18n="r1_size"></td><td>1× 48–80GB</td><td class="num">77.2%</td><td data-i18n="r1_when"></td></tr>
+          <tr><td>Qwen3-Coder-Next</td><td data-i18n="r2_type"></td><td class="num" data-i18n="r2_size"></td><td>1× 80GB</td><td class="num">~70.6%</td><td data-i18n="r2_when"></td></tr>
+          <tr><td>Qwen3.8-27B</td><td data-i18n="r3_type"></td><td class="num" data-i18n="r3_size"></td><td>1× 48–80GB</td><td class="num" data-i18n="r3_swe"></td><td data-i18n="r3_when"></td></tr>
+          <tr><td>GLM-4.6 / 4.5-Air</td><td data-i18n="r4_type"></td><td class="num" data-i18n="r4_size"></td><td>1× 80GB</td><td class="num">~68%</td><td data-i18n="r4_when"></td></tr>
+          <tr><td>DeepSeek-V4-Pro</td><td data-i18n="r5_type"></td><td class="num" data-i18n="r5_size"></td><td data-i18n="r5_hw"></td><td class="num">80.6%</td><td data-i18n="r5_when"></td></tr>
+          <tr><td>Qwen3.8-Max · GLM-5.2 · Kimi K2.6</td><td data-i18n="r6_type"></td><td class="num" data-i18n="r6_size"></td><td data-i18n="r6_hw"></td><td class="num">—</td><td data-i18n="r6_when"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note" data-i18n-html="note04"></p>
+  </section>
+
+  <section>
+    <h2><span class="n">05</span> <span data-i18n="s05_title">Рекомендація та налаштування</span></h2>
+    <p style="color:var(--soft)" data-i18n-html="s05_intro"></p>
+    <div class="setup" style="margin-top:1.2rem">
+      <div class="row"><div class="k" data-i18n="k_model">Модель</div><div class="v" data-i18n-html="v_model"></div></div>
+      <div class="row"><div class="k" data-i18n="k_server">Сервер</div><div class="v" data-i18n-html="v_server"></div></div>
+      <div class="row"><div class="k" data-i18n="k_access">Доступ</div><div class="v" data-i18n-html="v_access"></div></div>
+      <div class="row"><div class="k" data-i18n="k_weights">Ваги</div><div class="v" data-i18n-html="v_weights"></div></div>
+      <div class="row"><div class="k" data-i18n="k_image">Образ</div><div class="v" data-i18n-html="v_image"></div></div>
+      <div class="row"><div class="k" data-i18n="k_saving">Економія</div><div class="v" data-i18n-html="v_saving"></div></div>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="n">06</span> <span data-i18n="s06_title">З досвіду реальних деплоїв</span></h2>
+    <div class="setup">
+      <div class="row"><div class="k" data-i18n="k_start">Час старту</div><div class="v" data-i18n-html="v_start"></div></div>
+      <div class="row"><div class="k" data-i18n="k_cost">#1 стаття витрат</div><div class="v" data-i18n="v_cost"></div></div>
+      <div class="row"><div class="k" data-i18n="k_reliab">Надійність</div><div class="v" data-i18n-html="v_reliab"></div></div>
+      <div class="row"><div class="k" data-i18n="k_persist">Persistence</div><div class="v" data-i18n="v_persist"></div></div>
+      <div class="row"><div class="k" data-i18n="k_speed">Швидкість</div><div class="v" data-i18n-html="v_speed"></div></div>
+    </div>
+  </section>
+
+  <footer>
+    <p class="note" data-i18n="footer_star"></p>
+    <p class="note" data-i18n="footer_note"></p>
+  </footer>
+</div>
+
+<script src="assets/calc.js"></script>
+<script src="assets/data.js"></script>
+<script src="assets/i18n.js"></script>
+<script>
+  "use strict";
+  const $ = (id) => document.getElementById(id);
+  const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+  const LS = "gpuBudgetAdv.v1", LANG_KEY = "gpuBudgetLang.v1";
+  const D = window.Data, C = window.Calc;
+
+  function defaults() {
+    return {
+      preset: "medium", seats: 1, gpuIdx: 0, apiIdx: 0,
+      rate: D.GPUS[0].rate, volume: D.DEFAULT_VOLUME,
+      hoursDay: D.PRESETS.medium.hoursDay, daysMonth: D.PRESETS.medium.daysMonth,
+      assumption: Object.assign({}, D.ASSUMPTION),
+      gpus: D.GPUS.map((g) => ({ label: g.label, rate: g.rate })),
+      lang: (localStorage.getItem(LANG_KEY) || (navigator.language || "").slice(0, 2)) === "en" ? "en" : "uk"
+    };
+  }
+  const state = defaults();
+  // shared price config via ?c= (gpus + volume), else localStorage
+  try {
+    const p = new URLSearchParams(location.search).get("c");
+    if (p) { const c = JSON.parse(decodeURIComponent(escape(atob(p)))); if (c && Array.isArray(c.gpus) && c.gpus.length) { state.gpus = c.gpus.map((g) => ({ label: String(g.label || "GPU").slice(0, 48), rate: Math.max(0, Number(g.rate) || 0) })); if (c.vol != null) state.volume = Math.max(0, Number(c.vol) || 0); } }
+    else { Object.assign(state, JSON.parse(localStorage.getItem(LS) || "{}")); }
+  } catch (e) { /* ignore */ }
+  state.assumption = Object.assign({}, D.ASSUMPTION, state.assumption || {});
+  if (!Array.isArray(state.gpus) || !state.gpus.length) state.gpus = D.GPUS.map((g) => ({ label: g.label, rate: g.rate }));
+  if (state.gpuIdx >= state.gpus.length) state.gpuIdx = 0;
+
+  function save() { try { localStorage.setItem(LS, JSON.stringify(state)); } catch (e) { /* ignore */ } }
+  function fmt(k, m) { let s = window.I18N[state.lang][k]; for (const kk in m) s = s.replaceAll("{" + kk + "}", m[kk]); return s; }
+  function chipLabel(label) { return label.replace("A100 80GB · ", "A100 ").replace("H100 80GB · ", "H100 ").replace(" · ", " "); }
+
+  function compute() {
+    const per = C.selfHostPerSeat(state);
+    const team = C.selfHostTeam(state);
+    const mtokPer = C.tokensPerSeatMtok({ hoursDay: state.hoursDay, daysMonth: state.daysMonth, activeFraction: state.assumption.activeFraction, tokPerSec: state.assumption.tokPerSec, inputMultiplier: state.assumption.inputMultiplier });
+    const price = D.APIS[state.apiIdx].pricePerMtok;
+    const apiTeam = C.apiCostTeam({ tokensPerSeatMtok: mtokPer, seats: state.seats, pricePerMtok: price });
+    const be = C.breakEvenMtok({ teamSelfHostCost: team, pricePerMtok: price });
+    return { per, team, apiTeam, be, mtokTeam: mtokPer * Math.max(1, state.seats) };
+  }
+
+  function render() {
+    const r = compute();
+    $("total").textContent = money(r.team);
+    const gpuLabel = state.gpus[state.gpuIdx] ? chipLabel(state.gpus[state.gpuIdx].label) : "custom";
+    $("basisLine").textContent = money(r.per) + " " + window.I18N[state.lang].bd_perseat + " · " + gpuLabel + " $" + Number(state.rate).toFixed(2) + " + $" + Number(state.volume) + " volume · " + state.seats + " " + window.I18N[state.lang].bd_seats;
+    $("selfTile").textContent = money(r.team);
+    $("apiTile").textContent = money(r.apiTeam);
+    $("apiName").textContent = D.APIS[state.apiIdx].label;
+    $("verdict").textContent = r.apiTeam < r.team
+      ? fmt("vs_verdict_api_cheaper", { delta: money(r.team - r.apiTeam), be: Math.round(r.be).toLocaleString("en-US") })
+      : fmt("vs_verdict_self_cheaper", { delta: money(r.apiTeam - r.team) });
+    $("usageLine").textContent = fmt("vs_usage", { mtok: r.mtokTeam.toFixed(1), af: Math.round(state.assumption.activeFraction * 100), tps: state.assumption.tokPerSec, im: state.assumption.inputMultiplier });
+    document.querySelectorAll("#seg [data-preset]").forEach((b) => { const on = b.dataset.preset === state.preset; b.classList.toggle("on", on); b.setAttribute("aria-pressed", on); });
+    document.querySelectorAll("#gpuChips .api").forEach((c, i) => { const on = i === state.gpuIdx; c.classList.toggle("on", on); c.setAttribute("aria-pressed", on); });
+    document.querySelectorAll("#apiChips .api").forEach((c, i) => { const on = i === state.apiIdx; c.classList.toggle("on", on); c.setAttribute("aria-pressed", on); });
+    $("hpd").value = state.hoursDay; $("dpm").value = state.daysMonth; $("rate").value = state.rate; $("vol").value = state.volume; $("seatsIn").value = state.seats;
+    $("asmActive").value = Math.round(state.assumption.activeFraction * 100); $("asmTps").value = state.assumption.tokPerSec; $("asmInput").value = state.assumption.inputMultiplier;
+    save();
+  }
+
+  function buildGpuChips() {
+    $("gpuChips").innerHTML = state.gpus.map((g, i) => '<button type="button" class="api" data-i="' + i + '">' + chipLabel(g.label) + ' <span class="p">$' + Number(g.rate).toFixed(2) + '</span></button>').join("");
+    $("gpuChips").querySelectorAll(".api").forEach((c) => c.onclick = () => { state.gpuIdx = +c.dataset.i; state.rate = state.gpus[state.gpuIdx].rate; render(); });
+  }
+  function buildApiChips() {
+    $("apiChips").innerHTML = D.APIS.map((a, i) => '<button type="button" class="api" data-i="' + i + '">' + a.label + ' <span class="p">$' + a.pricePerMtok.toFixed(2) + '</span></button>').join("");
+    $("apiChips").querySelectorAll(".api").forEach((c) => c.onclick = () => { state.apiIdx = +c.dataset.i; render(); });
+  }
+  function renderCfg() {
+    const list = $("cfgList"); list.innerHTML = "";
+    state.gpus.forEach((g, i) => {
+      const row = document.createElement("div"); row.className = "cfg-item";
+      const name = document.createElement("input"); name.type = "text"; name.value = g.label; name.setAttribute("aria-label", window.I18N[state.lang].aria_name);
+      name.oninput = () => { g.label = name.value; buildGpuChips(); render(); };
+      const rt = document.createElement("input"); rt.type = "number"; rt.min = "0"; rt.step = "0.05"; rt.value = g.rate; rt.setAttribute("aria-label", window.I18N[state.lang].aria_rate);
+      rt.oninput = () => { g.rate = Math.max(0, parseFloat(rt.value) || 0); if (i === state.gpuIdx) state.rate = g.rate; buildGpuChips(); render(); };
+      const del = document.createElement("button"); del.className = "del"; del.type = "button"; del.textContent = "×"; del.setAttribute("aria-label", window.I18N[state.lang].aria_del);
+      del.onclick = () => { if (state.gpus.length <= 1) return; state.gpus.splice(i, 1); if (state.gpuIdx >= state.gpus.length) state.gpuIdx = state.gpus.length - 1; state.rate = state.gpus[state.gpuIdx].rate; renderCfg(); buildGpuChips(); render(); };
+      row.append(name, rt, del); list.appendChild(row);
+    });
+  }
+  function flash(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 1800); }
+
+  document.querySelectorAll("#seg [data-preset]").forEach((b) => b.onclick = () => { state.preset = b.dataset.preset; const p = D.PRESETS[state.preset]; state.hoursDay = p.hoursDay; state.daysMonth = p.daysMonth; render(); });
+  $("hpd").oninput = () => { state.hoursDay = parseFloat($("hpd").value) || 0; state.preset = ""; render(); };
+  $("dpm").oninput = () => { state.daysMonth = parseFloat($("dpm").value) || 0; state.preset = ""; render(); };
+  $("rate").oninput = () => { state.rate = parseFloat($("rate").value) || 0; state.gpuIdx = -1; render(); };
+  $("vol").oninput = () => { state.volume = parseFloat($("vol").value) || 0; render(); };
+  $("seatsIn").oninput = () => { state.seats = Math.max(1, Math.floor(parseFloat($("seatsIn").value) || 1)); render(); };
+  $("asmActive").oninput = () => { state.assumption.activeFraction = Math.max(0, (parseFloat($("asmActive").value) || 0) / 100); render(); };
+  $("asmTps").oninput = () => { state.assumption.tokPerSec = Math.max(0, parseFloat($("asmTps").value) || 0); render(); };
+  $("asmInput").oninput = () => { state.assumption.inputMultiplier = Math.max(0, parseFloat($("asmInput").value) || 0); render(); };
+  $("addGpu").onclick = () => { state.gpus.push({ label: window.I18N[state.lang].new_gpu, rate: 1.0 }); renderCfg(); buildGpuChips(); render(); };
+  $("resetCfg").onclick = () => { state.gpus = D.GPUS.map((g) => ({ label: g.label, rate: g.rate })); state.gpuIdx = 0; state.rate = state.gpus[0].rate; renderCfg(); buildGpuChips(); render(); flash(window.I18N[state.lang].toast_reset); };
+  $("shareCfg").onclick = async () => {
+    const payload = btoa(unescape(encodeURIComponent(JSON.stringify({ gpus: state.gpus, vol: state.volume }))));
+    const url = location.origin + location.pathname + "?c=" + payload;
+    try { await navigator.clipboard.writeText(url); flash(window.I18N[state.lang].toast_copied); } catch (e) { prompt(window.I18N[state.lang].prompt_copy, url); }
+  };
+  function setLang(l) { state.lang = l; localStorage.setItem(LANG_KEY, l); window.applyI18n(document, l); $("langToggle").textContent = l === "uk" ? "EN" : "UK"; renderCfg(); render(); }
+  $("langToggle").onclick = () => setLang(state.lang === "uk" ? "en" : "uk");
+
+  buildGpuChips(); buildApiChips(); renderCfg();
+  window.applyI18n(document, state.lang);
+  $("langToggle").textContent = state.lang === "uk" ? "EN" : "UK";
+  render();
+</script>
+</body>
+</html>

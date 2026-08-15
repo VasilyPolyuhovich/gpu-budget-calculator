@@ -135,6 +135,12 @@
       details_toggle: "Деталі: за що платиш — моделі та ціни",
       details_body: "Здебільшого платиш за GPU-години. За що саме — моделі, кванти, ставки — дивись на сторінці <a href=\"advanced.html\">Розширений</a>.",
       risk_simple: "<strong>Головний ризик — забутий pod.</strong> 24/7 ≈ ×8 бюджету (~$1015/міс на карту). Вимикай після сесії або постав авто-terminate.",
+      asm_active: "Активна генерація %",
+      asm_tps: "tok/s",
+      asm_input: "Вхід (input) ×",
+      adv_h1: "Розширений калькулятор і референс",
+      adv_lede: "Повний контроль: усі поля, редактор цін, порівняння з API та операторський довідник. Для швидкої оцінки — <a href=\"index.html\">Проста сторінка</a>.",
+      vs_title_adv: "Порівняння з платними API",
       foot_star_full: "* Vast.ai та ціни API ми не перевіряли на практиці — з публічних лістингів. Обсяг у токенах — оцінка. Серпень 2026."
     },
     en: {
@@ -268,6 +274,12 @@
       details_toggle: "Details: what you pay for — models & prices",
       details_body: "You mostly pay for GPU-hours. What exactly — models, quants, rates — see the <a href=\"advanced.html\">Advanced</a> page.",
       risk_simple: "<strong>Main risk — a forgotten pod.</strong> 24/7 ≈ ×8 the budget (~$1015/mo per card). Shut down after a session or set auto-terminate.",
+      asm_active: "Active generation %",
+      asm_tps: "tok/s",
+      asm_input: "Input ×",
+      adv_h1: "Advanced calculator & reference",
+      adv_lede: "Full control: every field, price editor, API comparison and the operator reference. For a quick estimate — the <a href=\"index.html\">Simple page</a>.",
+      vs_title_adv: "Comparison with paid APIs",
       foot_star_full: "* Vast.ai and API prices are unverified by us — from public listings. Token volume is an estimate. August 2026."
     }
   };
