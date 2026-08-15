@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  :root{--paper:#0e1413;--card:#141b1a;--card2:#0f1615;--ink:#e9efec;--soft:#a4b0ac;--faint:#6c7a76;--line:#243230;
+    --accent:#37c9ac;--accent2:#7fe6d0;--accentbg:#0f312b;--amber:#e6a34c;--amberbg:#2a1d0d;--amberline:#5a3d17;
+    --mono:ui-monospace,Menlo,Consolas,monospace;--sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+  @media(prefers-color-scheme:light){:root{--paper:#eef0ee;--card:#fff;--card2:#f4f6f4;--ink:#17201f;--soft:#4a5654;--faint:#7c8886;--line:#dde2de;--accent:#0d7d6b;--accent2:#095e50;--accentbg:#dcece8;--amber:#b4560f;--amberbg:#f7ecdd;--amberline:#e3b98a}}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 500px at 50% -10%,rgba(55,201,172,.10),transparent 60%),var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.5;padding:2rem 1rem 3rem;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:600px;margin:0 auto}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.4rem}
+  .brand{font-family:var(--mono);font-size:.74rem;letter-spacing:.16em;text-transform:uppercase;color:var(--accent)}
+  .top-right{display:flex;gap:.5rem;font-family:var(--mono);font-size:.72rem}
+  .pill{border:1px solid var(--line);border-radius:999px;padding:.3rem .6rem;color:var(--soft)}
+  .pill.link{color:var(--accent2);border-color:color-mix(in srgb,var(--accent) 45%,transparent)}
+  h1{font-size:1.85rem;letter-spacing:-.02em;margin:0 0 .3rem}
+  .lede{color:var(--soft);margin:0 0 1.3rem}
+  .card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:20px;padding:1.4rem;box-shadow:0 24px 60px -30px rgba(0,0,0,.5);margin-bottom:1rem}
+  .lbl{font-family:var(--mono);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--faint);margin:0 0 .5rem}
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:.35rem;margin-bottom:1.2rem}
+  .seg button{border:0;background:transparent;color:var(--soft);font-weight:600;font-size:.88rem;padding:.55rem .3rem;border-radius:10px;cursor:pointer;display:flex;flex-direction:column;gap:.12rem;font-family:var(--sans)}
+  .seg button small{font-family:var(--mono);font-size:.62rem;color:var(--faint);font-weight:400}
+  .seg button.on{background:var(--accent);color:#06110f} .seg button.on small{color:rgba(6,17,15,.7)}
+  .rowline{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.3rem}
+  .stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .stepper button{width:38px;height:38px;border:0;background:var(--card2);color:var(--ink);font-size:1.2rem;cursor:pointer}
+  .stepper .val{min-width:44px;text-align:center;font-family:var(--mono);font-size:1.15rem;font-weight:700}
+  .result{border-top:1px dashed var(--line);padding-top:1.2rem}
+  .big{display:flex;align-items:baseline;gap:.5rem}
+  .big .num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:3.4rem;font-weight:800;line-height:.9;background:linear-gradient(180deg,var(--accent2),var(--accent));-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:-.02em}
+  .big .u{color:var(--faint);font-family:var(--mono);font-size:.88rem}
+  .sub{color:var(--soft);font-size:.9rem;margin:.45rem 0 0} .sub b{color:var(--ink)}
+  .disc{margin-top:.9rem;border:1px solid var(--line);border-radius:12px;background:var(--card2)}
+  .disc>.h{display:flex;gap:.5rem;padding:.7rem .9rem;font-family:var(--mono);font-size:.78rem;color:var(--soft);cursor:pointer}
+  .disc .chev{color:var(--accent)}
+
+  /* vs API insight */
+  .vs{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:1.3rem 1.4rem;margin-bottom:1rem}
+  .vs h3{margin:0 0 .2rem;font-size:1.05rem}
+  .vs .hint{color:var(--faint);font-size:.82rem;margin:0 0 1rem}
+  .apis{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:1rem}
+  .api{font-family:var(--mono);font-size:.74rem;border:1px solid var(--line);border-radius:999px;padding:.36rem .68rem;color:var(--soft);cursor:pointer}
+  .api.on{border-color:var(--accent);background:var(--accentbg);color:var(--accent2)}
+  .api .p{color:var(--faint)}
+  .cmp{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-bottom:.9rem}
+  .cmp .b{border:1px solid var(--line);border-radius:12px;padding:.8rem;text-align:center}
+  .cmp .b .n{font-family:var(--mono);font-size:1.7rem;font-weight:800;letter-spacing:-.02em}
+  .cmp .b.self{border-color:color-mix(in srgb,var(--accent) 50%,transparent)}
+  .cmp .b.self .n{color:var(--accent2)}
+  .cmp .b .k{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint);margin-bottom:.25rem}
+  .verdict{font-size:.92rem;color:var(--soft);background:var(--card2);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:10px;padding:.7rem .9rem}
+  .verdict b{color:var(--ink)}
+  .usage{font-family:var(--mono);font-size:.72rem;color:var(--faint);margin:.7rem 0 0}
+  .beyond{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:1rem}
+  .beyond .i{display:flex;gap:.5rem;font-size:.85rem;color:var(--soft);align-items:flex-start}
+  .beyond .i b{color:var(--ink)} .beyond .i .m{color:var(--accent)}
+  .risk{display:flex;gap:.7rem;padding:.8rem 1rem;border-radius:12px;background:var(--amberbg);border:1px solid var(--amberline);border-left:4px solid var(--amber);font-size:.88rem;color:var(--soft)}
+  .risk b{color:var(--ink)}
+  .foot{margin-top:1.1rem;font-family:var(--mono);font-size:.68rem;color:var(--faint);line-height:1.7}
+</style></head>
+<body><div class="wrap">
+  <div class="top"><div class="brand">◇ Self-host LLM · кошторис</div>
+    <div class="top-right"><span class="pill">UK / EN</span><span class="pill link">Розширений →</span></div></div>
+  <h1>Скільки коштуватиме команді?</h1>
+  <p class="lede">Навантаження + люди → бюджет. І чесне порівняння з платними API.</p>
+
+  <div class="card">
+    <p class="lbl">Навантаження на людину</p>
+    <div class="seg"><button>Легкий<small>2 год·20дн</small></button><button class="on">Середній<small>4 год·22дн</small></button><button>Важкий<small>8 год·22дн</small></button></div>
+    <div class="rowline"><p class="lbl" style="margin:0">Робочих місць</p><div class="stepper"><button>−</button><span class="val">3</span><button>+</button></div></div>
+    <div class="result">
+      <div class="big"><span class="num">$387</span><span class="u">/ міс · команда</span></div>
+      <p class="sub"><b>$129</b> на місце × 3 · базово A100 Secure $1.39/год + $7 volume</p>
+    </div>
+    <div class="disc"><div class="h"><span class="chev">▸</span> Розширено — GPU · ставка · volume · години/дні</div></div>
+  </div>
+
+  <div class="vs">
+    <h3>А якби платити за API?</h3>
+    <p class="hint">Обери провайдера. Обсяг оцінено з пресета (можна змінити в Розширено).</p>
+    <div class="apis">
+      <span class="api on">Qwen API <span class="p">$0.50</span></span>
+      <span class="api">Z.ai / GLM <span class="p">$0.60</span></span>
+      <span class="api">DeepSeek <span class="p">$0.45</span></span>
+      <span class="api">Kimi <span class="p">$1.00</span></span>
+      <span class="api">Mistral <span class="p">$0.90</span></span>
+      <span class="api">Claude/GPT <span class="p">$6.00</span></span>
+    </div>
+    <div class="cmp">
+      <div class="b self"><div class="k">Self-host</div><div class="n">$387</div></div>
+      <div class="b"><div class="k">Qwen API</div><div class="n">$30</div></div>
+    </div>
+    <div class="verdict">При цьому обсязі <b>API дешевший на ~$357/міс</b>. Self-host на <b>чистих грошах</b> виграє від <b>~770 Mtok/міс</b> (точка беззбитковості) — або одразу, якщо рахувати контроль ↓. Проти <b>Claude/GPT</b> ($6/Mtok) свій уже майже нарівні (~$360).</div>
+    <p class="usage">Оцінка обсягу: ~60 Mtok/міс на команду (припущення: активна генерація 20% часу × 93 tok/s, вхід ×3). Змінюється в Розширено.</p>
+    <div class="beyond">
+      <div class="i"><span class="m">◆</span><div><b>Повний контроль (root).</b> Свій стек, свої версії, пін моделі</div></div>
+      <div class="i"><span class="m">◆</span><div><b>Дані лишаються у тебе.</b> Нічого не йде до провайдера</div></div>
+      <div class="i"><span class="m">◆</span><div><b>Без зовнішніх змін політик/фільтрів.</b> Поведінка стабільна</div></div>
+      <div class="i"><span class="m">◆</span><div><b>Без rate-limit.</b> Пропускна здатність — твоя</div></div>
+    </div>
+  </div>
+
+  <div class="risk">⚠ <div><b>Головний ризик — забутий pod.</b> 24/7 ≈ ×8 бюджету (~$1015/міс на карту). Вимикай після сесії або авто-terminate.</div></div>
+  <div class="disc"><div class="h"><span class="chev">▸</span> Деталі: за що платиш — моделі та ціни</div></div>
+  <p class="foot">* Vast.ai та ціни API ми не перевіряли на практиці — з публічних лістингів. Обсяг у токенах — оцінка. Серпень 2026.</p>
+</div></body></html>
