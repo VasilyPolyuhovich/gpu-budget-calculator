@@ -133,6 +133,8 @@
       beyond_policy: "Без зовнішніх змін політик/фільтрів. Поведінка стабільна",
       beyond_rate: "Без rate-limit. Пропускна здатність — твоя",
       details_toggle: "Деталі: за що платиш — моделі та ціни",
+      details_body: "Здебільшого платиш за GPU-години. За що саме — моделі, кванти, ставки — дивись на сторінці <a href=\"advanced.html\">Розширений</a>.",
+      risk_simple: "<strong>Головний ризик — забутий pod.</strong> 24/7 ≈ ×8 бюджету (~$1015/міс на карту). Вимикай після сесії або постав авто-terminate.",
       foot_star_full: "* Vast.ai та ціни API ми не перевіряли на практиці — з публічних лістингів. Обсяг у токенах — оцінка. Серпень 2026."
     },
     en: {
@@ -264,6 +266,8 @@
       beyond_policy: "No external policy/filter changes. Behavior is stable",
       beyond_rate: "No rate limits. The throughput is yours",
       details_toggle: "Details: what you pay for — models & prices",
+      details_body: "You mostly pay for GPU-hours. What exactly — models, quants, rates — see the <a href=\"advanced.html\">Advanced</a> page.",
+      risk_simple: "<strong>Main risk — a forgotten pod.</strong> 24/7 ≈ ×8 the budget (~$1015/mo per card). Shut down after a session or set auto-terminate.",
       foot_star_full: "* Vast.ai and API prices are unverified by us — from public listings. Token volume is an estimate. August 2026."
     }
   };
